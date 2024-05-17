@@ -17,11 +17,25 @@
     
 #define CHECK_BOOL(x, ret)   \
     if (!x) {    \
+        LOG_ERR("%s is false\n", #x); \
         return ret; \
     }
 
 #define CHECK_BOOL_GO(x, e)   \
     if (!x) {    \
+        LOG_ERR("%s is false\n", #x); \
+        goto e; \
+    }
+
+#define CHECK_LT(x, y, ret)   \
+    if (x < y) {    \
+        LOG_ERR("%s:%d < %s:%d\n", #x, x, #y, y);   \
+        return ret; \
+    }
+
+#define CHECK_LT_GO(x, y, e)   \
+    if (x < y) {    \
+        LOG_ERR("%s:%d < %s:%d\n", #x, x, #y, y);   \
         goto e; \
     }
 

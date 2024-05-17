@@ -13,28 +13,21 @@ typedef struct
     HttpServerUrlProcCb cb;
 }HttpServerUrlInfo;
 
-typedef struct
-{
+typedef struct {
+    pthread_mutex_t mutex;
     pthread_t pthread_id;
     void* url_info_list;
     struct mg_mgr mgr;
     struct mg_connection *con;
 }HttpServerMng;
-static HttpServerMng kHttpServerMng;
+static HttpServerMng kHttpServerMng = {.mutex = PTHREAD_MUTEX_INITIALIZER};
 
-long GetTime() {
-    struct timeval time_;
-    memset(&time_, 0, sizeof(struct timeval));
-
-    gettimeofday(&time_, NULL);
-    return time_.tv_sec*1000 + time_.tv_usec/1000;
-}
-
-void cb(struct mg_connection *c, int ev, void *ev_data) {
+static void cb(struct mg_connection *c, int ev, void *ev_data) {
     if (ev == MG_EV_HTTP_MSG) {
         int i = 0;
         struct mg_http_message *hm = ev_data;
         int list_size = ListSize(kHttpServerMng.url_info_list);
+        pthread_mutex_lock(&kHttpServerMng.mutex);
         for(; i < list_size; i++) {
             HttpServerUrlInfo* info = ListGet(kHttpServerMng.url_info_list, i);
             if (info == NULL) {
@@ -70,6 +63,7 @@ end:
                 break;
             }
         }
+        pthread_mutex_unlock(&kHttpServerMng.mutex);
 
         if(i >= list_size) {
             mg_http_reply(c, 501, "", "{\"code\":501, \"massage\":\"request not support\", \"data\":\"\"}");
@@ -77,7 +71,7 @@ end:
     }
 }
 
-void* HttpServerProc(void* arg) {
+static void* HttpServerProc(void* arg) {
     mg_mgr_init(&kHttpServerMng.mgr);
     kHttpServerMng.con = mg_http_listen(&kHttpServerMng.mgr, arg, cb, &kHttpServerMng.mgr);
 
@@ -101,7 +95,7 @@ void HttpServerUnInit() {
     pthread_join(kHttpServerMng.pthread_id, NULL);
 
     mg_mgr_free(&kHttpServerMng.mgr);
-
+    ListDestory(kHttpServerMng.url_info_list);
 }
 
 void HttpServerUrlRegister(char* method, char* url, HttpServerUrlProcCb cb) {
@@ -110,6 +104,7 @@ void HttpServerUrlRegister(char* method, char* url, HttpServerUrlProcCb cb) {
     snprintf(info.url, sizeof(info.url), "%s", url);
     info.cb = cb;
 
+    pthread_mutex_lock(&kHttpServerMng.mutex);
     ListPush(kHttpServerMng.url_info_list, &info, sizeof(HttpServerUrlInfo));
-    printf("list_size:%d\n", ListSize(kHttpServerMng.url_info_list));
+    pthread_mutex_unlock(&kHttpServerMng.mutex);
 }

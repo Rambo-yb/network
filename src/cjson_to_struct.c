@@ -7,6 +7,7 @@ int CjsonToStructAreas(cJSON* json, Areas* areas) {
     CHECK_POINTER(areas, -1);
 
     if (!cJSON_IsArray(json)) {
+        LOG_ERR("json is not array!\n");
         return -1;
     }
 
@@ -89,10 +90,16 @@ int CjsonToStructAlgorithemEnable(cJSON* json, AlgorithemEnable* algorithem_enab
 
     cJSON* tracking_object = cJSON_GetObjectItem(json, "tracking_object");
     CHECK_POINTER(tracking_object, -1);
-    CHECK_BOOL(cJSON_IsArray(tracking_object), -1);
-    algorithem_enable->tracking_object.id_num = cJSON_GetArraySize(tracking_object);
-    for(int i = 0; i < algorithem_enable->tracking_object.id_num && i < TRACK_ID_NUM_MAX; i++) {
-        cJSON* obj_item = cJSON_GetArrayItem(tracking_object, i);
+
+    CJSON_GET_NUMBER(tracking_object, "id_num", algorithem_enable->tracking_object.id_num, sizeof(algorithem_enable->tracking_object.id_num), end);
+
+    cJSON* ids = cJSON_GetObjectItem(tracking_object, "id");
+    CHECK_POINTER(ids, -1);
+    CHECK_BOOL(cJSON_IsArray(ids), -1);
+
+    int id_arr_size = cJSON_GetArraySize(ids);
+    for(int i = 0; i < id_arr_size && i < algorithem_enable->tracking_object.id_num && i < TRACK_ID_NUM_MAX; i++) {
+        cJSON* obj_item = cJSON_GetArrayItem(ids, i);
         CHECK_POINTER_GO(obj_item, end);
 
         if (cJSON_IsNumber(obj_item)) {
@@ -138,4 +145,3 @@ int CjsonToStructPeripheralInfo(cJSON* json, PeripheralInfo* peripheral_info) {
 end:
     return -1;
 }
-

@@ -2,11 +2,11 @@
 #include "cjson_common.h"
 #include "check_common.h"
 
-int StructToCjsonAreas(Areas* areas, cJSON* json) {
+int StructToCjsonAreas(Areas* areas, cJSON** json) {
     CHECK_POINTER(areas, -1);
 
-    json = cJSON_CreateArray();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateArray();
+    CHECK_POINTER(new_json, -1);
 
     cJSON* area_item = NULL;
     cJSON* points = NULL;
@@ -28,14 +28,16 @@ int StructToCjsonAreas(Areas* areas, cJSON* json) {
             CHECK_POINTER_GO(point_item, end_points);
 
             CJSON_SET_NUMBER(point_item, "x", areas->area[i].point[j].x, end_point);
-            CJSON_SET_NUMBER(point_item, "x", areas->area[i].point[j].y, end_point);
+            CJSON_SET_NUMBER(point_item, "y", areas->area[i].point[j].y, end_point);
 
             CHECK_BOOL_GO(cJSON_AddItemToArray(points, point_item), end_point);
         }
 
         CHECK_BOOL_GO(cJSON_AddItemToObject(area_item, "point", points), end_points);
-        CHECK_BOOL_GO(cJSON_AddItemToArray(json, area_item), end_area);
+        CHECK_BOOL_GO(cJSON_AddItemToArray(new_json, area_item), end_area);
     }
+
+    *json = new_json;
 
     return 0;
 end_point:
@@ -45,73 +47,77 @@ end_points:
 end_area:
     cJSON_free(area_item);
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonPtzCtrl(PtzCtrl* ptz_ctrl, cJSON* json) {
+int StructToCjsonPtzCtrl(PtzCtrl* ptz_ctrl, cJSON** json) {
     CHECK_POINTER(ptz_ctrl, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(json, "yaw", ptz_ctrl->yaw, end);
-    CJSON_SET_NUMBER(json, "pitch", ptz_ctrl->pitch, end);
-    CJSON_SET_NUMBER(json, "scan_mode", ptz_ctrl->scan_mode, end);
-    CJSON_SET_NUMBER(json, "step", ptz_ctrl->step, end);
-    CJSON_SET_NUMBER(json, "motor_enable", ptz_ctrl->motor_enable, end);
+    CJSON_SET_NUMBER(new_json, "yaw", ptz_ctrl->yaw, end);
+    CJSON_SET_NUMBER(new_json, "pitch", ptz_ctrl->pitch, end);
+    CJSON_SET_NUMBER(new_json, "scan_mode", ptz_ctrl->scan_mode, end);
+    CJSON_SET_NUMBER(new_json, "step", ptz_ctrl->step, end);
+    CJSON_SET_NUMBER(new_json, "motor_enable", ptz_ctrl->motor_enable, end);
+
+    *json = new_json;
 
     return 0;
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonChipCtrl(ChipCtrl* chip_ctrl, cJSON* json) {
+int StructToCjsonChipCtrl(ChipCtrl* chip_ctrl, cJSON** json) {
     CHECK_POINTER(chip_ctrl, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(json, "contrast", chip_ctrl->contrast, end);
-    CJSON_SET_NUMBER(json, "brightness", chip_ctrl->brightness, end);
-    CJSON_SET_NUMBER(json, "polarity", chip_ctrl->polarity, end);
-    CJSON_SET_NUMBER(json, "bad_spot_remove", chip_ctrl->bad_spot_remove, end);
-    CJSON_SET_NUMBER(json, "hot_spot_track", chip_ctrl->hot_spot_track, end);
+    CJSON_SET_NUMBER(new_json, "contrast", chip_ctrl->contrast, end);
+    CJSON_SET_NUMBER(new_json, "brightness", chip_ctrl->brightness, end);
+    CJSON_SET_NUMBER(new_json, "polarity", chip_ctrl->polarity, end);
+    CJSON_SET_NUMBER(new_json, "bad_spot_remove", chip_ctrl->bad_spot_remove, end);
+    CJSON_SET_NUMBER(new_json, "hot_spot_track", chip_ctrl->hot_spot_track, end);
 
+    *json = new_json;
     return 0;
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonOtherCtrl(OtherCtrl* other_ctrl, cJSON* json) {
+int StructToCjsonOtherCtrl(OtherCtrl* other_ctrl, cJSON** json) {
     CHECK_POINTER(other_ctrl, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(json, "defog_by_heat_enable", other_ctrl->defog_by_heat_enable, end);
+    CJSON_SET_NUMBER(new_json, "defog_by_heat_enable", other_ctrl->defog_by_heat_enable, end);
 
+    *json = new_json;
     return 0;
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON* json) {
+int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** json) {
     CHECK_POINTER(algorithem_enable, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
     cJSON* ids = NULL;
     cJSON* id = NULL;
     cJSON* tracking_object = NULL;
         
-    CJSON_SET_NUMBER(json, "detection_enable", algorithem_enable->detection_enable, end);
-    CJSON_SET_NUMBER(json, "tracking_enable", algorithem_enable->tracking_enable, end);
-    CJSON_SET_NUMBER(json, "action_analyze_enable", algorithem_enable->action_analyze_enable, end);
+    CJSON_SET_NUMBER(new_json, "detection_enable", algorithem_enable->detection_enable, end);
+    CJSON_SET_NUMBER(new_json, "tracking_enable", algorithem_enable->tracking_enable, end);
+    CJSON_SET_NUMBER(new_json, "action_analyze_enable", algorithem_enable->action_analyze_enable, end);
 
     tracking_object = cJSON_CreateObject();
     CHECK_POINTER_GO(tracking_object, end);
@@ -126,8 +132,9 @@ int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON* js
         CHECK_BOOL_GO(cJSON_AddItemToArray(ids, id), end_id);
     }
     CHECK_BOOL_GO(cJSON_AddItemToObject(tracking_object, "id", ids), end_ids);
-    CHECK_BOOL_GO(cJSON_AddItemToObject(json, "tracking_object", tracking_object), end_object);
+    CHECK_BOOL_GO(cJSON_AddItemToObject(new_json, "tracking_object", tracking_object), end_object);
 
+    *json = new_json;
     return 0;
 
 end_id:
@@ -137,46 +144,48 @@ end_ids:
 end_object:
     cJSON_free(tracking_object);
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonAlarmInfo(AlarmInfo* alarm_info, cJSON* json) {
+int StructToCjsonAlarmInfo(AlarmInfo* alarm_info, cJSON** json) {
     CHECK_POINTER(alarm_info, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(json, "over_boundary", alarm_info->over_boundary, end);
-    CJSON_SET_NUMBER(json, "area_intrude", alarm_info->area_intrude, end);
-    CJSON_SET_NUMBER(json, "abnormal_action", alarm_info->abnormal_action, end);
-    CJSON_SET_NUMBER(json, "fire_point_detection", alarm_info->fire_point_detection, end);
-    CJSON_SET_NUMBER(json, "temperature_abnormal", alarm_info->temperature_abnormal, end);
-    CJSON_SET_NUMBER(json, "voltage_abnormal", alarm_info->voltage_abnormal, end);
-    CJSON_SET_NUMBER(json, "ampere_abnormal", alarm_info->ampere_abnormal, end);
+    CJSON_SET_NUMBER(new_json, "over_boundary", alarm_info->over_boundary, end);
+    CJSON_SET_NUMBER(new_json, "area_intrude", alarm_info->area_intrude, end);
+    CJSON_SET_NUMBER(new_json, "abnormal_action", alarm_info->abnormal_action, end);
+    CJSON_SET_NUMBER(new_json, "fire_point_detection", alarm_info->fire_point_detection, end);
+    CJSON_SET_NUMBER(new_json, "temperature_abnormal", alarm_info->temperature_abnormal, end);
+    CJSON_SET_NUMBER(new_json, "voltage_abnormal", alarm_info->voltage_abnormal, end);
+    CJSON_SET_NUMBER(new_json, "ampere_abnormal", alarm_info->ampere_abnormal, end);
 
+    *json = new_json;
     return 0;
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
 
-int StructToCjsonPeripheralInfo(PeripheralInfo* peripheral_info, cJSON* json) {
+int StructToCjsonPeripheralInfo(PeripheralInfo* peripheral_info, cJSON** json) {
     CHECK_POINTER(peripheral_info, -1);
 
-    json = cJSON_CreateObject();
-    CHECK_POINTER(json, -1);
+    cJSON* new_json = cJSON_CreateObject();
+    CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(json, "yaw", peripheral_info->yaw, end);
-    CJSON_SET_NUMBER(json, "pitch", peripheral_info->pitch, end);
-    CJSON_SET_NUMBER(json, "motor_temperature", peripheral_info->motor_temperature, end);
-    CJSON_SET_NUMBER(json, "input_voltage", peripheral_info->input_voltage, end);
-    CJSON_SET_NUMBER(json, "working_ampere", peripheral_info->working_ampere, end);
-    CJSON_SET_NUMBER(json, "longitude", peripheral_info->longitude, end);
-    CJSON_SET_NUMBER(json, "latitude", peripheral_info->latitude, end);
+    CJSON_SET_NUMBER(new_json, "yaw", peripheral_info->yaw, end);
+    CJSON_SET_NUMBER(new_json, "pitch", peripheral_info->pitch, end);
+    CJSON_SET_NUMBER(new_json, "motor_temperature", peripheral_info->motor_temperature, end);
+    CJSON_SET_NUMBER(new_json, "input_voltage", peripheral_info->input_voltage, end);
+    CJSON_SET_NUMBER(new_json, "working_ampere", peripheral_info->working_ampere, end);
+    CJSON_SET_NUMBER(new_json, "longitude", peripheral_info->longitude, end);
+    CJSON_SET_NUMBER(new_json, "latitude", peripheral_info->latitude, end);
 
+    *json = new_json;
     return 0;
 end:
-    cJSON_free(json);
+    cJSON_free(new_json);
     return -1;
 }
