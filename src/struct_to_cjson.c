@@ -1,4 +1,4 @@
-#include "common.h"
+#include "struct_to_cjson.h"
 #include "cjson_common.h"
 #include "check_common.h"
 
@@ -11,7 +11,7 @@ int StructToCjsonAreas(Areas* areas, cJSON** json) {
     cJSON* area_item = NULL;
     cJSON* points = NULL;
     cJSON* point_item = NULL;
-    for(int i = 0; i < areas->area_num && i < AREA_NUM_MAX; i++) {
+    for(int i = 0; i < areas->area_num && i < NET_AREA_NUM_MAX; i++) {
         area_item = cJSON_CreateObject();
         CHECK_POINTER_GO(area_item, end);
         

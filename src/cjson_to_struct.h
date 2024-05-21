@@ -1,7 +1,7 @@
 #ifndef __CJSON_TO_STRUCT_H__
 #define __CJSON_TO_STRUCT_H__
 
-#include "common.h"
+#include "network_common.h"
 #include "cJSON.h"
 
 #ifdef __cplusplus

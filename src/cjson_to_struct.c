@@ -1,4 +1,4 @@
-#include "common.h"
+#include "cjson_to_struct.h"
 #include "cjson_common.h"
 #include "check_common.h"
 
@@ -12,7 +12,7 @@ int CjsonToStructAreas(cJSON* json, Areas* areas) {
     }
 
     areas->area_num = cJSON_GetArraySize(json);
-    for(int i = 0; i < areas->area_num && i < AREA_NUM_MAX; i++) {
+    for(int i = 0; i < areas->area_num && i < NET_AREA_NUM_MAX; i++) {
         cJSON* area_item = cJSON_GetArrayItem(json, i);
         CHECK_POINTER_GO(area_item, end);
 
@@ -25,7 +25,7 @@ int CjsonToStructAreas(cJSON* json, Areas* areas) {
         CHECK_POINTER(points, -1);
         CHECK_BOOL(cJSON_IsArray(points), -1);
 
-        for(int j = 0; j < areas->area[i].point_num_max && i < POINT_NUM_MAX; j++) {
+        for(int j = 0; j < areas->area[i].point_num_max && i < NET_POINT_NUM_MAX; j++) {
             cJSON* point_item = cJSON_GetArrayItem(points, j);
             CHECK_POINTER_GO(point_item, end);
 
@@ -98,7 +98,7 @@ int CjsonToStructAlgorithemEnable(cJSON* json, AlgorithemEnable* algorithem_enab
     CHECK_BOOL(cJSON_IsArray(ids), -1);
 
     int id_arr_size = cJSON_GetArraySize(ids);
-    for(int i = 0; i < id_arr_size && i < algorithem_enable->tracking_object.id_num && i < TRACK_ID_NUM_MAX; i++) {
+    for(int i = 0; i < id_arr_size && i < algorithem_enable->tracking_object.id_num && i < NET_TRACK_ID_NUM_MAX; i++) {
         cJSON* obj_item = cJSON_GetArrayItem(ids, i);
         CHECK_POINTER_GO(obj_item, end);
 

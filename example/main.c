@@ -17,8 +17,15 @@ int main(int argc, char** argv) {
 
     NetworkInit(&func);
 
+    sleep(10);
+
+    char* boby = "{\"name\":\"test\"}";
+    char resp[512] = {0};
+    NetworkRequest("http://192.168.100.6:8080/post_test", "unused", boby, resp, sizeof(resp), 1000 * 10);
+    printf("%s\n", resp);
+
     while (1) {
         sleep(1);
     }
-    
+
 }
