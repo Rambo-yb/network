@@ -61,7 +61,8 @@ int CjsonToStructChipCtrl(cJSON* json, ChipCtrl* chip_ctrl) {
     CJSON_GET_NUMBER(json, "contrast", chip_ctrl->contrast, sizeof(chip_ctrl->contrast), end);
     CJSON_GET_NUMBER(json, "brightness", chip_ctrl->brightness, sizeof(chip_ctrl->brightness), end);
     CJSON_GET_NUMBER(json, "polarity", chip_ctrl->polarity, sizeof(chip_ctrl->polarity), end);
-    CJSON_GET_NUMBER(json, "bad_spot_remove", chip_ctrl->bad_spot_remove, sizeof(chip_ctrl->bad_spot_remove), end);
+    CJSON_GET_NUMBER(json, "bad_spot_threshold", chip_ctrl->bad_spot_threshold, sizeof(chip_ctrl->bad_spot_threshold), end);
+    CJSON_GET_NUMBER(json, "bad_spot_oper", chip_ctrl->bad_spot_oper, sizeof(chip_ctrl->bad_spot_oper), end);
     CJSON_GET_NUMBER(json, "hot_spot_track", chip_ctrl->hot_spot_track, sizeof(chip_ctrl->hot_spot_track), end);
     
     return 0;
@@ -90,16 +91,11 @@ int CjsonToStructAlgorithemEnable(cJSON* json, AlgorithemEnable* algorithem_enab
 
     cJSON* tracking_object = cJSON_GetObjectItem(json, "tracking_object");
     CHECK_POINTER(tracking_object, -1);
+    CHECK_BOOL(cJSON_IsArray(tracking_object), -1);
 
-    CJSON_GET_NUMBER(tracking_object, "id_num", algorithem_enable->tracking_object.id_num, sizeof(algorithem_enable->tracking_object.id_num), end);
-
-    cJSON* ids = cJSON_GetObjectItem(tracking_object, "id");
-    CHECK_POINTER(ids, -1);
-    CHECK_BOOL(cJSON_IsArray(ids), -1);
-
-    int id_arr_size = cJSON_GetArraySize(ids);
-    for(int i = 0; i < id_arr_size && i < algorithem_enable->tracking_object.id_num && i < NET_TRACK_ID_NUM_MAX; i++) {
-        cJSON* obj_item = cJSON_GetArrayItem(ids, i);
+    algorithem_enable->tracking_object.id_num = cJSON_GetArraySize(tracking_object);
+    for(int i = 0; i < algorithem_enable->tracking_object.id_num && i < NET_TRACK_ID_NUM_MAX; i++) {
+        cJSON* obj_item = cJSON_GetArrayItem(tracking_object, i);
         CHECK_POINTER_GO(obj_item, end);
 
         if (cJSON_IsNumber(obj_item)) {

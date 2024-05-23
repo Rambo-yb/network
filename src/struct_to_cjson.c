@@ -80,7 +80,8 @@ int StructToCjsonChipCtrl(ChipCtrl* chip_ctrl, cJSON** json) {
     CJSON_SET_NUMBER(new_json, "contrast", chip_ctrl->contrast, end);
     CJSON_SET_NUMBER(new_json, "brightness", chip_ctrl->brightness, end);
     CJSON_SET_NUMBER(new_json, "polarity", chip_ctrl->polarity, end);
-    CJSON_SET_NUMBER(new_json, "bad_spot_remove", chip_ctrl->bad_spot_remove, end);
+    CJSON_SET_NUMBER(new_json, "bad_spot_threshold", chip_ctrl->bad_spot_threshold, end);
+    CJSON_SET_NUMBER(new_json, "bad_spot_oper", chip_ctrl->bad_spot_oper, end);
     CJSON_SET_NUMBER(new_json, "hot_spot_track", chip_ctrl->hot_spot_track, end);
 
     *json = new_json;
@@ -111,7 +112,6 @@ int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** j
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
-    cJSON* ids = NULL;
     cJSON* id = NULL;
     cJSON* tracking_object = NULL;
         
@@ -119,19 +119,15 @@ int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** j
     CJSON_SET_NUMBER(new_json, "tracking_enable", algorithem_enable->tracking_enable, end);
     CJSON_SET_NUMBER(new_json, "action_analyze_enable", algorithem_enable->action_analyze_enable, end);
 
-    tracking_object = cJSON_CreateObject();
+    tracking_object = cJSON_CreateArray();
     CHECK_POINTER_GO(tracking_object, end);
-    CJSON_SET_NUMBER(tracking_object, "id_num", algorithem_enable->tracking_object.id_num, end_object);
 
-    ids = cJSON_CreateArray();
-    CHECK_POINTER_GO(ids, end_object);
     for(int i = 0; i < algorithem_enable->tracking_object.id_num; i++) {
         id = cJSON_CreateNumber(algorithem_enable->tracking_object.id[i]);
-        CHECK_POINTER_GO(id, end_ids);
+        CHECK_POINTER_GO(id, end_object);
 
-        CHECK_BOOL_GO(cJSON_AddItemToArray(ids, id), end_id);
+        CHECK_BOOL_GO(cJSON_AddItemToArray(tracking_object, id), end_id);
     }
-    CHECK_BOOL_GO(cJSON_AddItemToObject(tracking_object, "id", ids), end_ids);
     CHECK_BOOL_GO(cJSON_AddItemToObject(new_json, "tracking_object", tracking_object), end_object);
 
     *json = new_json;
@@ -139,8 +135,6 @@ int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** j
 
 end_id:
     cJSON_free(id);
-end_ids:
-    cJSON_free(ids);
 end_object:
     cJSON_free(tracking_object);
 end:

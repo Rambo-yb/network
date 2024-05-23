@@ -45,7 +45,13 @@ static void cb(struct mg_connection *c, int ev, void *ev_data) {
                 if (json != NULL) {
                     CJSON_SET_NUMBER(json, "code", code, end);
                     CJSON_SET_STRING(json, "message", res, end);
-                    CJSON_SET_STRING(json, "data", out, end);
+                    if (strlen(out) > 0) {
+                        cJSON* out_json = cJSON_Parse(out);
+                        CHECK_POINTER_GO(out_json, end);
+                        CHECK_BOOL_GO(cJSON_AddItemToObject(json, "data", out_json), end);
+                    } else {
+                        CJSON_SET_STRING(json, "data", out, end);
+                    }
 
                     char* replay = cJSON_PrintUnformatted(json);
                     if (replay != NULL) {

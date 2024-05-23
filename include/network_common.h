@@ -38,7 +38,8 @@ typedef struct ChipCtrl {
     int contrast;
     int brightness;
     int polarity;
-    bool bad_spot_remove;
+    int bad_spot_threshold;
+    int bad_spot_oper;
     bool hot_spot_track;
 }ChipCtrl;
 
@@ -57,6 +58,8 @@ typedef struct AlgorithemEnable {
     bool action_analyze_enable;
     TrackingObject tracking_object;
 }AlgorithemEnable;
+
+
 
 typedef struct AlarmInfo {
     bool over_boundary;

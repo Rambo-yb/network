@@ -22,7 +22,7 @@ static int HttpClientResponseCb(void* ptr, int size, int nmemb, void* userp) {
     return size*nmemb;
 }
 
-int HttpClientRequest(char* url, char* body, char* res, int res_size, int timeout){
+int HttpClientRequest(const char* method, const char* url, const char* body, char* res, int res_size, int timeout){
     CHECK_POINTER(url, -1);
     CHECK_POINTER(res, -1);
 
@@ -36,14 +36,14 @@ int HttpClientRequest(char* url, char* body, char* res, int res_size, int timeou
     resp.buf = (char*)calloc(1, sizeof(char));
     CHECK_POINTER_GO(resp.buf, end);
 
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, (body != NULL) ? "POST" : "GET");
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "http");
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, timeout);
 
     struct curl_slist *headers = NULL;
-    if (body != NULL) {
+    if (strcmp(method, "POST") == 0) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
     }

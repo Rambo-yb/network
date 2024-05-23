@@ -23,7 +23,6 @@ static NetworkMng kNetworkMng;
 static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int res_size) {
     CHECK_POINTER(in, 500);
     CHECK_POINTER(out, 500);
-
     snprintf(res, res_size, "request json error");
 
     cJSON* json = cJSON_Parse(in);
@@ -32,16 +31,55 @@ static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int re
     char conf_name[64] = {0};
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), end);
 
+    LOG_INFO("Set Config %s\n", conf_name);
     cJSON* conf_json = cJSON_GetObjectItem(json, conf_name);
     CHECK_POINTER_GO(conf_json, end);
     
-    Areas areas;
-    memset(&areas, 0, sizeof(Areas));
-    int ret = CjsonToStructAreas(conf_json, &areas);
-    CHECK_LT_GO(ret, 0, end);
+    int ret = 0;
+    if (strcmp(conf_name, "areas") == 0) {
+        Areas areas;
+        memset(&areas, 0, sizeof(Areas));
+        ret = CjsonToStructAreas(conf_json, &areas);
+        CHECK_LT_GO(ret, 0, end);
 
-    ret = kNetworkMng.func.set_config_cb(conf_name, &areas, NULL, res, res_size);
-    CHECK_LT_GO(ret, 0, end);
+        ret = kNetworkMng.func.set_config_cb(conf_name, &areas, NULL, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "algorithem_enable") == 0) {
+        AlgorithemEnable algorithem_enable;
+        memset(&algorithem_enable, 0, sizeof(AlgorithemEnable));
+        ret = CjsonToStructAlgorithemEnable(conf_json, &algorithem_enable);
+        CHECK_LT_GO(ret, 0, end);
+
+        ret = kNetworkMng.func.set_config_cb(conf_name, &algorithem_enable, NULL, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "ptz_ctrl") == 0) {
+        PtzCtrl ptz_ctrl;
+        memset(&ptz_ctrl, 0, sizeof(PtzCtrl));
+        int ret = CjsonToStructPtzCtrl(conf_json, &ptz_ctrl);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = kNetworkMng.func.set_config_cb(conf_name, &ptz_ctrl, NULL, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "chip_ctrl") == 0) {
+        ChipCtrl chip_ctrl;
+        memset(&chip_ctrl, 0, sizeof(ChipCtrl));
+        int ret = CjsonToStructChipCtrl(conf_json, &chip_ctrl);
+        CHECK_LT_GO(ret, 0, end);
+
+        ret = kNetworkMng.func.set_config_cb(conf_name, &chip_ctrl, NULL, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "other_ctrl") == 0) {
+        OtherCtrl other_ctrl;
+        memset(&other_ctrl, 0, sizeof(OtherCtrl));
+        int ret = CjsonToStructOtherCtrl(conf_json, &other_ctrl);
+        CHECK_LT_GO(ret, 0, end);
+
+        ret = kNetworkMng.func.set_config_cb(conf_name, &other_ctrl, NULL, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+    } else {
+        snprintf(res, res_size, "ctrl request not support");
+        goto end;
+    }
 
     snprintf(res, res_size, "success");
     cJSON_free(json);
@@ -64,16 +102,53 @@ static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int re
     char conf_name[64] = {0};
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), end);
     
-    Areas areas;
-    memset(&areas, 0, sizeof(Areas));
-    int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &areas, res, res_size);
-    CHECK_LT_GO(ret, 0, end);
-
     snprintf(res, res_size, "respect json error");
-
+    LOG_INFO("Get Config %s\n", conf_name);
     cJSON* conf_json = NULL;
-    ret = StructToCjsonAreas(&areas, &conf_json);
-    CHECK_LT_GO(ret, 0, end);
+    if (strcmp(conf_name, "areas") == 0) {
+        Areas areas;
+        memset(&areas, 0, sizeof(Areas));
+        int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &areas, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = StructToCjsonAreas(&areas, &conf_json);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "algorithem_enable") == 0) {
+        AlgorithemEnable algorithem_enable;
+        memset(&algorithem_enable, 0, sizeof(AlgorithemEnable));
+        int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &algorithem_enable, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = StructToCjsonAlgorithemEnable(&algorithem_enable, &conf_json);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "ptz_ctrl") == 0) {
+        PtzCtrl ptz_ctrl;
+        memset(&ptz_ctrl, 0, sizeof(PtzCtrl));
+        int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &ptz_ctrl, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = StructToCjsonPtzCtrl(&ptz_ctrl, &conf_json);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "chip_ctrl") == 0) {
+        ChipCtrl chip_ctrl;
+        memset(&chip_ctrl, 0, sizeof(ChipCtrl));
+        int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &chip_ctrl, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = StructToCjsonChipCtrl(&chip_ctrl, &conf_json);
+        CHECK_LT_GO(ret, 0, end);
+    } else if (strcmp(conf_name, "other_ctrl") == 0) {
+        OtherCtrl other_ctrl;
+        memset(&other_ctrl, 0, sizeof(OtherCtrl));
+        int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", &other_ctrl, res, res_size);
+        CHECK_LT_GO(ret, 0, end);
+        
+        ret = StructToCjsonOtherCtrl(&other_ctrl, &conf_json);
+        CHECK_LT_GO(ret, 0, end);
+    } else {
+        snprintf(res, res_size, "ctrl request not support");
+        goto end;
+    }
 
     if(!cJSON_AddItemToObject(json, conf_name, conf_json)) {
         cJSON_free(conf_json);
@@ -87,83 +162,6 @@ static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int re
     snprintf(res, res_size, "success");
 
     free(buff);
-    cJSON_free(json);
-    return 200;
-end:
-
-    cJSON_free(json);
-    return 400;
-}
-
-static int NetworkDevCtrl(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
-
-    snprintf(res, res_size, "request json error");
-
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
-
-    char ctrl_mode[64] = {0};
-    CJSON_GET_STRING(json, "ctrl_mode", ctrl_mode, sizeof(ctrl_mode), end);
-
-    cJSON* conf_json = cJSON_GetObjectItem(json, ctrl_mode);
-    CHECK_POINTER_GO(conf_json, end);
-    
-    void* dev_ctrl = NULL;
-    PtzCtrl ptz_ctrl;
-    ChipCtrl chip_ctrl;
-    OtherCtrl other_ctrl;
-    if (strcmp(ctrl_mode, "ptz_ctrl") == 0) {
-        memset(&ptz_ctrl, 0, sizeof(PtzCtrl));
-        int ret = CjsonToStructPtzCtrl(conf_json, &ptz_ctrl);
-        CHECK_LT_GO(ret, 0, end);
-        dev_ctrl = &ptz_ctrl;
-    } else if (strcmp(ctrl_mode, "chip_ctrl") == 0) {
-        memset(&chip_ctrl, 0, sizeof(ChipCtrl));
-        int ret = CjsonToStructChipCtrl(conf_json, &chip_ctrl);
-        CHECK_LT_GO(ret, 0, end);
-        dev_ctrl = &chip_ctrl;
-    } else if (strcmp(ctrl_mode, "other_ctrl") == 0) {
-        memset(&other_ctrl, 0, sizeof(OtherCtrl));
-        int ret = CjsonToStructOtherCtrl(conf_json, &other_ctrl);
-        CHECK_LT_GO(ret, 0, end);
-        dev_ctrl = &other_ctrl;
-    } else {
-        snprintf(res, res_size, "ctrl request not support");
-        goto end;
-    }
-
-    int ret = kNetworkMng.func.dev_ctrl_cb(ctrl_mode, &dev_ctrl, NULL, res, res_size);
-    CHECK_LT_GO(ret, 0, end);
-
-    snprintf(res, res_size, "success");
-    cJSON_free(json);
-    return 200;
-end:
-
-    cJSON_free(json);
-    return 400;
-}
-
-static int NetworkAlgorithemEnable(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
-
-    snprintf(res, res_size, "request json error");
-
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
-    
-    AlgorithemEnable algorithem_enable;
-    memset(&algorithem_enable, 0, sizeof(AlgorithemEnable));
-    int ret = CjsonToStructAlgorithemEnable(json, &algorithem_enable);
-    CHECK_LT_GO(ret, 0, end);
-
-    ret = kNetworkMng.func.algorithm_enable_cb("algorithem_enable", &algorithem_enable, NULL, res, res_size);
-    CHECK_LT_GO(ret, 0, end);
-
-    snprintf(res, res_size, "success");
     cJSON_free(json);
     return 200;
 end:
@@ -219,8 +217,6 @@ end:
 static HttpServerUrlInfo kUrlInfo[] ={
     {.method = "POST", .url = "/dev_api/set_config", .cb = NetworkSetConfig},
     {.method = "POST", .url = "/dev_api/get_config", .cb = NetworkGetConfig},
-    {.method = "POST", .url = "/dev_api/dev_ctrl", .cb = NetworkDevCtrl},
-    {.method = "POST", .url = "/dev_api/algorithm_enable", .cb = NetworkAlgorithemEnable},
     {.method = "POST", .url = "/dev_api/upgrade", .cb = NetworkUpgrade},
     {.method = "POST", .url = "/dev_api/http_svr_info", .cb = NetworkHttpServerInfo},
 };
@@ -243,10 +239,10 @@ void NetworkUnInit() {
 
 int NetworkRequest(const char* url, const char* req_key, void* body, char* res, int res_size, int timeout) {
     int ret = 0;
-    char buff[512] = {0};
+    char fall_url[512] = {0};
     char* json_str = NULL;
     if (url == NULL) {
-        snprintf(buff, sizeof(buff), "%s/pc_api/%s", kNetworkMng.pc_http_url, req_key);
+        snprintf(fall_url, sizeof(fall_url), "%s/pc_api/%s", kNetworkMng.pc_http_url, req_key);
 
         cJSON* json;
         if(strcmp(req_key, "peripheral_info") == 0) {
@@ -263,11 +259,13 @@ int NetworkRequest(const char* url, const char* req_key, void* body, char* res, 
             return -1;
         }
     } else {
-        snprintf(buff, sizeof(buff), "%s", url);
+        snprintf(fall_url, sizeof(fall_url), "%s", url);
         json_str = (char*)body;
     }
 
-    ret = HttpClientRequest(buff, json_str, res, res_size, timeout);
+    char method[16] = {0};
+    snprintf(method, sizeof(method), "%s", body == NULL ? "GET" : "POST");
+    ret = HttpClientRequest(method, fall_url, json_str, res, res_size, timeout);
 
     if (url == NULL && json_str != NULL) {
         free(json_str);

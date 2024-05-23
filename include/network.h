@@ -24,8 +24,6 @@ typedef struct NetworkOperFunc
 {
     NetworkOperCb set_config_cb;
     NetworkOperCb get_config_cb;
-    NetworkOperCb dev_ctrl_cb;
-    NetworkOperCb algorithm_enable_cb;
     NetworkOperCb upgrade_cb;
 }NetworkOperFunc;
 
