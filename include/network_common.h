@@ -52,12 +52,12 @@ typedef struct TrackingObject {
     int id[NET_TRACK_ID_NUM_MAX];
 }TrackingObject;
 
-typedef struct AlgorithemEnable {
+typedef struct AlgorithmEnable {
     bool detection_enable;
     bool tracking_enable;
     bool action_analyze_enable;
     TrackingObject tracking_object;
-}AlgorithemEnable;
+}AlgorithmEnable;
 
 
 

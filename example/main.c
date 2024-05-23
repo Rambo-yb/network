@@ -26,8 +26,8 @@ int GetConfig(char* sub_key, void* in, void* out, char* res, int res_size){
         }
 
         memcpy(out, &areas, sizeof(Areas));
-    } else if (strcmp(sub_key, "algorithem_enable") == 0) {
-        AlgorithemEnable enable;
+    } else if (strcmp(sub_key, "algorithm_enable") == 0) {
+        AlgorithmEnable enable;
         enable.detection_enable = 0;
         enable.tracking_enable = 1;
         enable.action_analyze_enable = 1;
@@ -36,7 +36,7 @@ int GetConfig(char* sub_key, void* in, void* out, char* res, int res_size){
         {
             enable.tracking_object.id[i] = i;
         }
-        memcpy(out, &enable, sizeof(AlgorithemEnable));
+        memcpy(out, &enable, sizeof(AlgorithmEnable));
     } else if (strcmp(sub_key, "ptz_ctrl") == 0) {
         PtzCtrl ptz_ctrl;
         ptz_ctrl.yaw = 180;

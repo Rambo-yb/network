@@ -24,7 +24,7 @@ int StructToCjsonAreas(void* st, cJSON** json) {
         points = cJSON_CreateArray();
         CHECK_POINTER_GO(points, end_area);
 
-        for(int j = 0; j < areas->area[i].point_num_max; j++) {
+        for(int j = 0; j < areas->area[i].point_num && j < areas->area[i].point_num_max && j < NET_POINT_NUM_MAX; j++) {
             point_item = cJSON_CreateObject();
             CHECK_POINTER_GO(point_item, end_points);
 
@@ -110,25 +110,25 @@ end:
     return -1;
 }
 
-int StructToCjsonAlgorithemEnable(void* st, cJSON** json) {
+int StructToCjsonAlgorithmEnable(void* st, cJSON** json) {
     CHECK_POINTER(st, -1);
 
-    AlgorithemEnable* algorithem_enable = (AlgorithemEnable*)st;
+    AlgorithmEnable* algorithm_enable = (AlgorithmEnable*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
     cJSON* id = NULL;
     cJSON* tracking_object = NULL;
         
-    CJSON_SET_NUMBER(new_json, "detection_enable", algorithem_enable->detection_enable, end);
-    CJSON_SET_NUMBER(new_json, "tracking_enable", algorithem_enable->tracking_enable, end);
-    CJSON_SET_NUMBER(new_json, "action_analyze_enable", algorithem_enable->action_analyze_enable, end);
+    CJSON_SET_NUMBER(new_json, "detection_enable", algorithm_enable->detection_enable, end);
+    CJSON_SET_NUMBER(new_json, "tracking_enable", algorithm_enable->tracking_enable, end);
+    CJSON_SET_NUMBER(new_json, "action_analyze_enable", algorithm_enable->action_analyze_enable, end);
 
     tracking_object = cJSON_CreateArray();
     CHECK_POINTER_GO(tracking_object, end);
 
-    for(int i = 0; i < algorithem_enable->tracking_object.id_num; i++) {
-        id = cJSON_CreateNumber(algorithem_enable->tracking_object.id[i]);
+    for(int i = 0; i < algorithm_enable->tracking_object.id_num; i++) {
+        id = cJSON_CreateNumber(algorithm_enable->tracking_object.id[i]);
         CHECK_POINTER_GO(id, end_object);
 
         CHECK_BOOL_GO(cJSON_AddItemToArray(tracking_object, id), end_id);

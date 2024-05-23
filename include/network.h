@@ -9,7 +9,7 @@ extern "C" {
  * @brief 网络操作回调
  * 回调子项与输入参数in的类型关系
  * [sub_key, in/out类型]:["string", char*],["areas", Areas],["ptz_ctrl", PtzCtrl],["chip_ctrl", ChipCtrl],
- *                   ["other_ctrl", OtherCtrl],["algorithem_enable", AlgorithemEnable]
+ *                   ["other_ctrl", OtherCtrl],["algorithm_enable", AlgorithmEnable]
  * @param [in] sub_key 回调子项类型,                   
  * @param [in] in 对应子项输入
  * @param [out] out 对应子项输出, 不接收输出时，传入NULL

@@ -6,7 +6,7 @@
 
 #define CJSON_GET_STRING(json, key, val, size, e) \
     do {    \
-        cJSON* root = cJSON_GetObjectItem(json, key); \
+        cJSON* root = cJSON_GetObjectItemCaseSensitive(json, key); \
         CHECK_POINTER_GO(root, e); \
         CHECK_BOOL_GO(cJSON_IsString(root), e); \
         snprintf(val, size, "%s", cJSON_GetStringValue(root));  \
@@ -14,7 +14,7 @@
 
 #define CJSON_GET_NUMBER(json, key, val, size, e) \
     do {    \
-        cJSON* root = cJSON_GetObjectItem(json, key); \
+        cJSON* root = cJSON_GetObjectItemCaseSensitive(json, key); \
         CHECK_POINTER_GO(root, e); \
         CHECK_BOOL_GO(cJSON_IsNumber(root), e); \
         val = cJSON_GetNumberValue(root); \

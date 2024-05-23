@@ -17,7 +17,7 @@ typedef struct {
 
 typedef struct {
     Areas areas;
-    AlgorithemEnable algorithem_enable;
+    AlgorithmEnable algorithm_enable;
     PtzCtrl ptz_ctrl;
     ChipCtrl chip_ctrl;
     OtherCtrl other_ctrl;
@@ -44,7 +44,7 @@ typedef struct
 
 static NetworkSubInfo kNetworkSubInfo[] = {
     {.sub_key = "areas", .st = &kNetworkMng.areas, .st_size = sizeof(kNetworkMng.areas), .s2j_cb = StructToCjsonAreas, .j2s_cb = CjsonToStructAreas},
-    {.sub_key = "algorithem_enable", .st = &kNetworkMng.algorithem_enable, .st_size = sizeof(kNetworkMng.algorithem_enable), .s2j_cb = StructToCjsonAlgorithemEnable, .j2s_cb = CjsonToStructAlgorithemEnable},
+    {.sub_key = "algorithm_enable", .st = &kNetworkMng.algorithm_enable, .st_size = sizeof(kNetworkMng.algorithm_enable), .s2j_cb = StructToCjsonAlgorithmEnable, .j2s_cb = CjsonToStructAlgorithmEnable},
     {.sub_key = "ptz_ctrl", .st = &kNetworkMng.ptz_ctrl, .st_size = sizeof(kNetworkMng.ptz_ctrl), .s2j_cb = StructToCjsonPtzCtrl, .j2s_cb = CjsonToStructPtzCtrl},
     {.sub_key = "chip_ctrl", .st = &kNetworkMng.chip_ctrl, .st_size = sizeof(kNetworkMng.chip_ctrl), .s2j_cb = StructToCjsonChipCtrl, .j2s_cb = CjsonToStructChipCtrl},
     {.sub_key = "other_ctrl", .st = &kNetworkMng.other_ctrl, .st_size = sizeof(kNetworkMng.other_ctrl), .s2j_cb = StructToCjsonOtherCtrl, .j2s_cb = CjsonToStructOtherCtrl},
@@ -63,7 +63,7 @@ static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int re
     char conf_name[64] = {0};
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), end);
 
-    cJSON* conf_json = cJSON_GetObjectItem(json, conf_name);
+    cJSON* conf_json = cJSON_GetObjectItemCaseSensitive(json, conf_name);
     CHECK_POINTER_GO(conf_json, end);
     
     int i = 0;
@@ -84,6 +84,7 @@ static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int re
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
         snprintf(res, res_size, "ctrl request not support");
+        LOG_ERR("ctrl request not support\n");
         goto end;
     }
 
@@ -131,6 +132,7 @@ static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int re
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
         snprintf(res, res_size, "ctrl request not support");
+        LOG_ERR("ctrl request not support\n");
         goto end;
     }
 
@@ -209,7 +211,7 @@ static HttpServerUrlInfo kUrlInfo[] ={
 int NetworkInit(NetworkOperFunc* func) {
     memcpy(&kNetworkMng.func, func, sizeof(NetworkOperFunc));
 
-    HttpServerInit(":8081");
+    HttpServerInit(":8080");
     for(int i = 0; i < sizeof(kUrlInfo) / sizeof(HttpServerUrlInfo); i++) {
         HttpServerUrlRegister(kUrlInfo[i].method, kUrlInfo[i].url, kUrlInfo[i].cb);
         LOG_INFO("server listen url, method:%s, url:%s\n", kUrlInfo[i].method, kUrlInfo[i].url);

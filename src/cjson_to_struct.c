@@ -22,11 +22,11 @@ int CjsonToStructAreas(cJSON* json, void* st) {
         CJSON_GET_NUMBER(area_item, "point_num_max", areas->area[i].point_num_max, sizeof(areas->area[i].point_num_max), end);
         CJSON_GET_NUMBER(area_item, "point_num", areas->area[i].point_num, sizeof(areas->area[i].point_num), end);
         
-        cJSON* points = cJSON_GetObjectItem(area_item, "point");
+        cJSON* points = cJSON_GetObjectItemCaseSensitive(area_item, "point");
         CHECK_POINTER(points, -1);
         CHECK_BOOL(cJSON_IsArray(points), -1);
 
-        for(int j = 0; j < areas->area[i].point_num_max && i < NET_POINT_NUM_MAX; j++) {
+        for(int j = 0; j < areas->area[i].point_num && j < areas->area[i].point_num_max && i < NET_POINT_NUM_MAX; j++) {
             cJSON* point_item = cJSON_GetArrayItem(points, j);
             CHECK_POINTER_GO(point_item, end);
 
@@ -85,26 +85,26 @@ end:
     return -1;
 }
 
-int CjsonToStructAlgorithemEnable(cJSON* json, void* st) {
+int CjsonToStructAlgorithmEnable(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
     CHECK_POINTER(st, -1);
 
-    AlgorithemEnable* algorithem_enable = (AlgorithemEnable*)st;
-    CJSON_GET_NUMBER(json, "detection_enable", algorithem_enable->detection_enable, sizeof(algorithem_enable->detection_enable), end);
-    CJSON_GET_NUMBER(json, "tracking_enable", algorithem_enable->tracking_enable, sizeof(algorithem_enable->tracking_enable), end);
-    CJSON_GET_NUMBER(json, "action_analyze_enable", algorithem_enable->action_analyze_enable, sizeof(algorithem_enable->action_analyze_enable), end);
+    AlgorithmEnable* algorithm_enable = (AlgorithmEnable*)st;
+    CJSON_GET_NUMBER(json, "detection_enable", algorithm_enable->detection_enable, sizeof(algorithm_enable->detection_enable), end);
+    CJSON_GET_NUMBER(json, "tracking_enable", algorithm_enable->tracking_enable, sizeof(algorithm_enable->tracking_enable), end);
+    CJSON_GET_NUMBER(json, "action_analyze_enable", algorithm_enable->action_analyze_enable, sizeof(algorithm_enable->action_analyze_enable), end);
 
-    cJSON* tracking_object = cJSON_GetObjectItem(json, "tracking_object");
+    cJSON* tracking_object = cJSON_GetObjectItemCaseSensitive(json, "tracking_object");
     CHECK_POINTER(tracking_object, -1);
     CHECK_BOOL(cJSON_IsArray(tracking_object), -1);
 
-    algorithem_enable->tracking_object.id_num = cJSON_GetArraySize(tracking_object);
-    for(int i = 0; i < algorithem_enable->tracking_object.id_num && i < NET_TRACK_ID_NUM_MAX; i++) {
+    algorithm_enable->tracking_object.id_num = cJSON_GetArraySize(tracking_object);
+    for(int i = 0; i < algorithm_enable->tracking_object.id_num && i < NET_TRACK_ID_NUM_MAX; i++) {
         cJSON* obj_item = cJSON_GetArrayItem(tracking_object, i);
         CHECK_POINTER_GO(obj_item, end);
 
         if (cJSON_IsNumber(obj_item)) {
-            algorithem_enable->tracking_object.id[i] = cJSON_GetNumberValue(obj_item);
+            algorithm_enable->tracking_object.id[i] = cJSON_GetNumberValue(obj_item);
         }
     }
     

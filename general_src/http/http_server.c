@@ -37,6 +37,9 @@ static void cb(struct mg_connection *c, int ev, void *ev_data) {
 
             if (mg_match(hm->uri, mg_str(info->url), NULL) 
                 && mg_match(hm->method, mg_str(info->method), NULL)) {
+
+                LOG_INFO("method:%.*s, uri:%.*s, body:%.*s\n", hm->method.len, hm->method.buf, hm->uri.len, hm->uri.buf, hm->body.len, hm->body.buf);
+
                 char out[1024*10] = {0};
                 char res[1024] = {0};
                 int code = info->cb(hm->body.buf, out, sizeof(out), res, sizeof(res));

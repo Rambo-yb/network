@@ -16,7 +16,7 @@ int StructToCjsonChipCtrl(void* st, cJSON** json);
 
 int StructToCjsonOtherCtrl(void* st, cJSON** json);
 
-int StructToCjsonAlgorithemEnable(void* st, cJSON** json);
+int StructToCjsonAlgorithmEnable(void* st, cJSON** json);
 
 int StructToCjsonAlarmInfo(void* st, cJSON** json);
 
