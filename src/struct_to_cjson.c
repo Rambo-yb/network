@@ -2,9 +2,10 @@
 #include "cjson_common.h"
 #include "check_common.h"
 
-int StructToCjsonAreas(Areas* areas, cJSON** json) {
-    CHECK_POINTER(areas, -1);
+int StructToCjsonAreas(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    Areas* areas = (Areas*)st;
     cJSON* new_json = cJSON_CreateArray();
     CHECK_POINTER(new_json, -1);
 
@@ -51,9 +52,10 @@ end:
     return -1;
 }
 
-int StructToCjsonPtzCtrl(PtzCtrl* ptz_ctrl, cJSON** json) {
-    CHECK_POINTER(ptz_ctrl, -1);
+int StructToCjsonPtzCtrl(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    PtzCtrl* ptz_ctrl = (PtzCtrl*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -71,9 +73,10 @@ end:
     return -1;
 }
 
-int StructToCjsonChipCtrl(ChipCtrl* chip_ctrl, cJSON** json) {
-    CHECK_POINTER(chip_ctrl, -1);
+int StructToCjsonChipCtrl(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    ChipCtrl* chip_ctrl = (ChipCtrl*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -91,9 +94,10 @@ end:
     return -1;
 }
 
-int StructToCjsonOtherCtrl(OtherCtrl* other_ctrl, cJSON** json) {
-    CHECK_POINTER(other_ctrl, -1);
+int StructToCjsonOtherCtrl(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    OtherCtrl* other_ctrl = (OtherCtrl*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -106,9 +110,10 @@ end:
     return -1;
 }
 
-int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** json) {
-    CHECK_POINTER(algorithem_enable, -1);
+int StructToCjsonAlgorithemEnable(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    AlgorithemEnable* algorithem_enable = (AlgorithemEnable*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -142,9 +147,10 @@ end:
     return -1;
 }
 
-int StructToCjsonAlarmInfo(AlarmInfo* alarm_info, cJSON** json) {
-    CHECK_POINTER(alarm_info, -1);
+int StructToCjsonAlarmInfo(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    AlarmInfo* alarm_info = (AlarmInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -163,9 +169,10 @@ end:
     return -1;
 }
 
-int StructToCjsonPeripheralInfo(PeripheralInfo* peripheral_info, cJSON** json) {
-    CHECK_POINTER(peripheral_info, -1);
+int StructToCjsonPeripheralInfo(void* st, cJSON** json) {
+    CHECK_POINTER(st, -1);
 
+    PeripheralInfo* peripheral_info = (PeripheralInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 

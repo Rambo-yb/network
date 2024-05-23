@@ -39,4 +39,16 @@
         goto e; \
     }
 
+#define CHECK_GE(x, y, ret)   \
+    if (x >= y) {    \
+        LOG_ERR("%s:%d >= %s:%d\n", #x, x, #y, y);   \
+        return ret; \
+    }
+
+#define CHECK_GE_GO(x, y, e)   \
+    if (x >= y) {    \
+        LOG_ERR("%s:%d >= %s:%d\n", #x, x, #y, y);   \
+        goto e; \
+    }
+
 #endif

@@ -8,19 +8,19 @@
 extern "C" {
 #endif
 
-int StructToCjsonAreas(Areas* areas, cJSON** json_);
+int StructToCjsonAreas(void* st, cJSON** json_);
 
-int StructToCjsonPtzCtrl(PtzCtrl* ptz_ctrl, cJSON** json);
+int StructToCjsonPtzCtrl(void* st, cJSON** json);
 
-int StructToCjsonChipCtrl(ChipCtrl* chip_ctrl, cJSON** json);
+int StructToCjsonChipCtrl(void* st, cJSON** json);
 
-int StructToCjsonOtherCtrl(OtherCtrl* other_ctrl, cJSON** json);
+int StructToCjsonOtherCtrl(void* st, cJSON** json);
 
-int StructToCjsonAlgorithemEnable(AlgorithemEnable* algorithem_enable, cJSON** json);
+int StructToCjsonAlgorithemEnable(void* st, cJSON** json);
 
-int StructToCjsonAlarmInfo(AlarmInfo* alarm_info, cJSON** json);
+int StructToCjsonAlarmInfo(void* st, cJSON** json);
 
-int StructToCjsonPeripheralInfo(PeripheralInfo* peripheral_info, cJSON** json);
+int StructToCjsonPeripheralInfo(void* st, cJSON** json);
 
 
 #ifdef __cplusplus

@@ -2,15 +2,16 @@
 #include "cjson_common.h"
 #include "check_common.h"
 
-int CjsonToStructAreas(cJSON* json, Areas* areas) {
+int CjsonToStructAreas(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(areas, -1);
+    CHECK_POINTER(st, -1);
 
     if (!cJSON_IsArray(json)) {
         LOG_ERR("json is not array!\n");
         return -1;
     }
 
+    Areas* areas = (Areas*)st;
     areas->area_num = cJSON_GetArraySize(json);
     for(int i = 0; i < areas->area_num && i < NET_AREA_NUM_MAX; i++) {
         cJSON* area_item = cJSON_GetArrayItem(json, i);
@@ -39,10 +40,11 @@ end:
     return -1;
 }
 
-int CjsonToStructPtzCtrl(cJSON* json, PtzCtrl* ptz_ctrl) {
+int CjsonToStructPtzCtrl(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(ptz_ctrl, -1);
+    CHECK_POINTER(st, -1);
 
+    PtzCtrl* ptz_ctrl = (PtzCtrl*)st;
     CJSON_GET_NUMBER(json, "yaw", ptz_ctrl->yaw, sizeof(ptz_ctrl->yaw), end);
     CJSON_GET_NUMBER(json, "pitch", ptz_ctrl->pitch, sizeof(ptz_ctrl->pitch), end);
     CJSON_GET_NUMBER(json, "scan_mode", ptz_ctrl->scan_mode, sizeof(ptz_ctrl->scan_mode), end);
@@ -54,10 +56,11 @@ end:
     return -1;
 }
 
-int CjsonToStructChipCtrl(cJSON* json, ChipCtrl* chip_ctrl) {
+int CjsonToStructChipCtrl(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(chip_ctrl, -1);
-
+    CHECK_POINTER(st, -1);
+    
+    ChipCtrl* chip_ctrl = (ChipCtrl*)st;
     CJSON_GET_NUMBER(json, "contrast", chip_ctrl->contrast, sizeof(chip_ctrl->contrast), end);
     CJSON_GET_NUMBER(json, "brightness", chip_ctrl->brightness, sizeof(chip_ctrl->brightness), end);
     CJSON_GET_NUMBER(json, "polarity", chip_ctrl->polarity, sizeof(chip_ctrl->polarity), end);
@@ -70,10 +73,11 @@ end:
     return -1;
 }
 
-int CjsonToStructOtherCtrl(cJSON* json, OtherCtrl* other_ctrl) {
+int CjsonToStructOtherCtrl(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(other_ctrl, -1);
+    CHECK_POINTER(st, -1);
 
+    OtherCtrl* other_ctrl = (OtherCtrl*)st;
     CJSON_GET_NUMBER(json, "defog_by_heat_enable", other_ctrl->defog_by_heat_enable, sizeof(other_ctrl->defog_by_heat_enable), end);
     
     return 0;
@@ -81,10 +85,11 @@ end:
     return -1;
 }
 
-int CjsonToStructAlgorithemEnable(cJSON* json, AlgorithemEnable* algorithem_enable) {
+int CjsonToStructAlgorithemEnable(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(algorithem_enable, -1);
+    CHECK_POINTER(st, -1);
 
+    AlgorithemEnable* algorithem_enable = (AlgorithemEnable*)st;
     CJSON_GET_NUMBER(json, "detection_enable", algorithem_enable->detection_enable, sizeof(algorithem_enable->detection_enable), end);
     CJSON_GET_NUMBER(json, "tracking_enable", algorithem_enable->tracking_enable, sizeof(algorithem_enable->tracking_enable), end);
     CJSON_GET_NUMBER(json, "action_analyze_enable", algorithem_enable->action_analyze_enable, sizeof(algorithem_enable->action_analyze_enable), end);
@@ -108,10 +113,11 @@ end:
     return -1;
 }
 
-int CjsonToStructAlarmInfo(cJSON* json, AlarmInfo* alarm_info) {
+int CjsonToStructAlarmInfo(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(alarm_info, -1);
+    CHECK_POINTER(st, -1);
 
+    AlarmInfo* alarm_info = (AlarmInfo*)st;
     CJSON_GET_NUMBER(json, "over_boundary", alarm_info->over_boundary, sizeof(alarm_info->over_boundary), end);
     CJSON_GET_NUMBER(json, "area_intrude", alarm_info->area_intrude, sizeof(alarm_info->area_intrude), end);
     CJSON_GET_NUMBER(json, "abnormal_action", alarm_info->abnormal_action, sizeof(alarm_info->abnormal_action), end);
@@ -125,10 +131,11 @@ end:
     return -1;
 }
 
-int CjsonToStructPeripheralInfo(cJSON* json, PeripheralInfo* peripheral_info) {
+int CjsonToStructPeripheralInfo(cJSON* json, void* st) {
     CHECK_POINTER(json, -1);
-    CHECK_POINTER(peripheral_info, -1);
+    CHECK_POINTER(st, -1);
 
+    PeripheralInfo* peripheral_info = (PeripheralInfo*)st;
     CJSON_GET_NUMBER(json, "yaw", peripheral_info->yaw, sizeof(peripheral_info->yaw), end);
     CJSON_GET_NUMBER(json, "pitch", peripheral_info->pitch, sizeof(peripheral_info->pitch), end);
     CJSON_GET_NUMBER(json, "motor_temperature", peripheral_info->motor_temperature, sizeof(peripheral_info->motor_temperature), end);
