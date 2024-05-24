@@ -52,13 +52,49 @@ static NetworkSubInfo kNetworkSubInfo[] = {
     {.sub_key = "alarm_info", .st = &kNetworkMng.alarm_info, .st_size = sizeof(kNetworkMng.alarm_info), .s2j_cb = StructToCjsonAlarmInfo, .j2s_cb = CjsonToStructAlarmInfo},
 };
 
-static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
-    snprintf(res, res_size, "request json error");
+static void NetworkReplay(void* c, int code, char* body, char* msg) {
+    cJSON* json = cJSON_CreateObject();
+    CHECK_POINTER_GO(json, end);
 
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
+    CJSON_SET_NUMBER(json, "code", code, end);
+    CJSON_SET_STRING(json, "message", msg, end);
+
+    cJSON* body_json = NULL;
+    if (strlen(body) > 0 && (body_json = cJSON_Parse(body)) != NULL) {
+        CHECK_BOOL_GO(cJSON_AddItemToObject(json, "data", body_json), end);
+    } else {
+        CJSON_SET_STRING(json, "data", body, end);
+    }
+
+    char* replay = cJSON_PrintUnformatted(json);
+    CHECK_POINTER_GO(replay, end);
+
+    HttpServerReplay(c, code, "", replay);
+
+    free(replay);
+    cJSON_free(json);
+    return ;
+end:
+
+    if (json != NULL) {
+        cJSON_free(json);
+    }
+
+    HttpServerReplay(c, 500, "", "{\"code\":500, \"massage\":\"json abnormal\", \"data\":\"\"}");
+}
+
+static void NetworkSetConfig(void* c, void* data) {
+    CHECK_POINTER(c, (void)0);
+    CHECK_POINTER(data, (void)0);
+
+    char msg[1024] = {0};
+    snprintf(msg, sizeof(msg), "request json error");
+
+    char body[1024*4] = {0};
+    HttpServerGetBody(data, body, sizeof(body));
+
+    cJSON* json = cJSON_Parse(body);
+    CHECK_POINTER_GO(json, end);
 
     char conf_name[64] = {0};
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), end);
@@ -74,43 +110,46 @@ static int NetworkSetConfig(char* in, char* out, int out_size, char* res, int re
             int ret = kNetworkSubInfo[i].j2s_cb(conf_json, kNetworkSubInfo[i].st);
             CHECK_LT_GO(ret, 0, end_unlock);
 
-            ret = kNetworkMng.func.set_config_cb(conf_name, kNetworkSubInfo[i].st, NULL, res, res_size);
+            ret = kNetworkMng.func.set_config_cb(conf_name, kNetworkSubInfo[i].st, NULL, msg, sizeof(msg));
             CHECK_LT_GO(ret, 0, end_unlock);
-
             break;
         }
     }
     pthread_mutex_unlock(&kNetworkMng.mutex);
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
-        snprintf(res, res_size, "ctrl request not support");
+        snprintf(msg, sizeof(msg), "ctrl request not support");
         LOG_ERR("ctrl request not support\n");
         goto end;
     }
 
-    snprintf(res, res_size, "success");
+    NetworkReplay(c, 200, "", "success");
     cJSON_free(json);
-    return 200;
+    return ;
 end_unlock:
     pthread_mutex_unlock(&kNetworkMng.mutex);
 end:
-    cJSON_free(json);
-    return 400;
+    if(json != NULL) {
+        cJSON_free(json);
+    }
+    NetworkReplay(c, 500, "", msg);
 }
 
-static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
+static void NetworkGetConfig(void* c, void* data) {
+    CHECK_POINTER(c, (void)0);
+    CHECK_POINTER(data, (void)0);
 
-    snprintf(res, res_size, "request json error");
+    char msg[1024] = {0};
+    snprintf(msg, sizeof(msg), "request json error");
 
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
+    char body[1024*4] = {0};
+    HttpServerGetBody(data, body, sizeof(body));
+
+    cJSON* json = cJSON_Parse(body);
+    CHECK_POINTER_GO(json, end);
 
     char conf_name[64] = {0};
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), end);
-    
-    snprintf(res, res_size, "respect json error");
 
     cJSON* conf_json = NULL;
     int i = 0;
@@ -119,19 +158,18 @@ static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int re
         if (strcmp(conf_name, kNetworkSubInfo[i].sub_key) == 0) {
             memset(kNetworkSubInfo[i].st, 0, kNetworkSubInfo[i].st_size);
 
-            int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", kNetworkSubInfo[i].st, res, res_size);
+            int ret = kNetworkMng.func.get_config_cb(conf_name, "unused", kNetworkSubInfo[i].st, msg, sizeof(msg));
             CHECK_LT_GO(ret, 0, end_unlock);
 
             ret = kNetworkSubInfo[i].s2j_cb(kNetworkSubInfo[i].st, &conf_json);
             CHECK_LT_GO(ret, 0, end_unlock);
-
             break;
         }
     }
     pthread_mutex_unlock(&kNetworkMng.mutex);
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
-        snprintf(res, res_size, "ctrl request not support");
+        snprintf(msg, sizeof(msg), "ctrl request not support");
         LOG_ERR("ctrl request not support\n");
         goto end;
     }
@@ -144,61 +182,73 @@ static int NetworkGetConfig(char* in, char* out, int out_size, char* res, int re
     char* buff = cJSON_PrintUnformatted(json);
     CHECK_POINTER_GO(buff, end);
 
-    snprintf(out, out_size, "%s", buff);
-    snprintf(res, res_size, "success");
+    NetworkReplay(c, 200, buff, "success");
 
     free(buff);
     cJSON_free(json);
-    return 200;
+    return ;
 end_unlock:
     pthread_mutex_unlock(&kNetworkMng.mutex);
 end:
-    cJSON_free(json);
-    return 400;
+    if(json != NULL) {
+        cJSON_free(json);
+    }
+    NetworkReplay(c, 400, "", msg);
 }
 
-static int NetworkUpgrade(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
+static void NetworkUpgrade(void* c, void* data) {
+    CHECK_POINTER(c, (void)0);
+    CHECK_POINTER(data, (void)0);
 
-    snprintf(res, res_size, "request json error");
+    char msg[1024] = {0};
+    snprintf(msg, sizeof(msg), "request json error");
 
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
+    char body[1024*4] = {0};
+    HttpServerGetBody(data, body, sizeof(body));
+
+    cJSON* json = cJSON_Parse(body);
+    CHECK_POINTER_GO(json, end);
 
     char url[512] = {0};
     CJSON_GET_STRING(json, "upgrade_url", url, sizeof(url), end);
 
-    int ret = kNetworkMng.func.upgrade_cb("string", url, NULL, res, res_size);
+    int ret = kNetworkMng.func.upgrade_cb("string", url, NULL, msg, sizeof(msg));
     CHECK_LT_GO(ret, 0, end);
 
-    snprintf(res, res_size, "success");
-    cJSON_free(json);
-    return 200;
-end:
+    NetworkReplay(c, 200, "", "success");
 
     cJSON_free(json);
-    return 400;
+    return ;
+end:
+    if(json != NULL) {
+        cJSON_free(json);
+    }
+    NetworkReplay(c, 400, "", msg);
 }
 
-static int NetworkHttpServerInfo(char* in, char* out, int out_size, char* res, int res_size) {
-    CHECK_POINTER(in, 500);
-    CHECK_POINTER(out, 500);
+static void NetworkHttpServerInfo(void* c, void* data) {
+    CHECK_POINTER(c, (void)0);
+    CHECK_POINTER(data, (void)0);
 
-    snprintf(res, res_size, "request json error");
+    char msg[1024] = {0};
+    snprintf(msg, sizeof(msg), "request json error");
 
-    cJSON* json = cJSON_Parse(in);
-    CHECK_POINTER(json, 400);
+    char body[1024*4] = {0};
+    HttpServerGetBody(data, body, sizeof(body));
+
+    cJSON* json = cJSON_Parse(body);
+    CHECK_POINTER_GO(json, end);
 
     CJSON_GET_STRING(json, "http_url", kNetworkMng.pc_http_url, sizeof(kNetworkMng.pc_http_url), end);
 
-    snprintf(res, res_size, "success");
+    NetworkReplay(c, 200, "", "success");
     cJSON_free(json);
-    return 200;
+    return ;
 end:
-
-    cJSON_free(json);
-    return 400;
+    if(json != NULL) {
+        cJSON_free(json);
+    }
+    NetworkReplay(c, 400, "", msg);
 }
 
 static HttpServerUrlInfo kUrlInfo[] ={
@@ -214,7 +264,7 @@ int NetworkInit(NetworkOperFunc* func) {
     HttpServerInit(":8080");
     for(int i = 0; i < sizeof(kUrlInfo) / sizeof(HttpServerUrlInfo); i++) {
         HttpServerUrlRegister(kUrlInfo[i].method, kUrlInfo[i].url, kUrlInfo[i].cb);
-        LOG_INFO("server listen url, method:%s, url:%s\n", kUrlInfo[i].method, kUrlInfo[i].url);
+        LOG_INFO("server listen url, method:%s, urI:%s\n", kUrlInfo[i].method, kUrlInfo[i].url);
     }
 
     return 0;

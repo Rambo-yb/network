@@ -30,45 +30,12 @@ static void cb(struct mg_connection *c, int ev, void *ev_data) {
         pthread_mutex_lock(&kHttpServerMng.mutex);
         for(; i < list_size; i++) {
             HttpServerUrlInfo* info = ListGet(kHttpServerMng.url_info_list, i);
-            if (info == NULL) {
-                mg_http_reply(c, 500, "", "{\"code\":500, \"massage\":\"json abnormal\", \"data\":\"\"}");
-                break;
-            }
-
-            if (mg_match(hm->uri, mg_str(info->url), NULL) 
+            if (info != NULL 
+                && mg_match(hm->uri, mg_str(info->url), NULL) 
                 && mg_match(hm->method, mg_str(info->method), NULL)) {
-
                 LOG_INFO("method:%.*s, uri:%.*s, body:%.*s\n", hm->method.len, hm->method.buf, hm->uri.len, hm->uri.buf, hm->body.len, hm->body.buf);
-
-                char out[1024*10] = {0};
-                char res[1024] = {0};
-                int code = info->cb(hm->body.buf, out, sizeof(out), res, sizeof(res));
-
-                cJSON* json = cJSON_CreateObject();
-                if (json != NULL) {
-                    CJSON_SET_NUMBER(json, "code", code, end);
-                    CJSON_SET_STRING(json, "message", res, end);
-                    if (strlen(out) > 0) {
-                        cJSON* out_json = cJSON_Parse(out);
-                        CHECK_POINTER_GO(out_json, end);
-                        CHECK_BOOL_GO(cJSON_AddItemToObject(json, "data", out_json), end);
-                    } else {
-                        CJSON_SET_STRING(json, "data", out, end);
-                    }
-
-                    char* replay = cJSON_PrintUnformatted(json);
-                    if (replay != NULL) {
-                        mg_http_reply(c, code, "", replay);
-                        free(replay);
-                    } else {
-end:
-                        mg_http_reply(c, 500, "", "{\"code\":500, \"massage\":\"json to string error\", \"data\":\"\"}");
-                    }
-                    cJSON_free(json);
-                } else {
-                    mg_http_reply(c, 500, "", "{\"code\":500, \"massage\":\"json abnormal\", \"data\":\"\"}");
-                }
-
+                info->cb(c, ev_data);
+                
                 break;
             }
         }
@@ -116,4 +83,23 @@ void HttpServerUrlRegister(char* method, char* url, HttpServerUrlProcCb cb) {
     pthread_mutex_lock(&kHttpServerMng.mutex);
     ListPush(kHttpServerMng.url_info_list, &info, sizeof(HttpServerUrlInfo));
     pthread_mutex_unlock(&kHttpServerMng.mutex);
+}
+
+void HttpServerGetUri(void* data, char* uri, int size) {
+    struct mg_http_message *hm = (struct mg_http_message *)data;
+    snprintf(uri, size, "%.*s", hm->uri.len, hm->uri.buf);
+}
+
+void HttpServerGethead(void* data, char* head, int size) {
+    struct mg_http_message *hm = (struct mg_http_message *)data;
+    snprintf(head, size, "%.*s", hm->head.len, hm->head.buf);
+}
+
+void HttpServerGetBody(void* data, char* body, int size) {
+    struct mg_http_message *hm = (struct mg_http_message *)data;
+    snprintf(body, size, "%.*s", hm->body.len, hm->body.buf);
+}
+
+void HttpServerReplay(void* c, int code, char* header, char* body){
+    mg_http_reply(c, code, header, body);
 }
