@@ -27,8 +27,8 @@ typedef struct Areas {
 }Areas;
 
 typedef struct PtzCtrl {
-    int yaw;
-    int pitch;
+    double yaw;
+    double pitch;
     int scan_mode;
     double step;
     bool motor_enable;    
@@ -72,13 +72,13 @@ typedef struct AlarmInfo {
 }AlarmInfo;
 
 typedef struct PeripheralInfo {
-    int yaw;
-    int pitch;
-    int motor_temperature;
-    int input_voltage;
-    int working_ampere;
-    int longitude;
-    int latitude;
+    double yaw;
+    double pitch;
+    double motor_temperature;
+    double input_voltage;
+    double working_ampere;
+    double longitude;
+    double latitude;
 }PeripheralInfo;
 
 #endif
