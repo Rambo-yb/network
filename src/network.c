@@ -305,7 +305,7 @@ int NetworkRequest(const char* url, const char* req_key, void* body, char* res, 
 
     char method[16] = {0};
     snprintf(method, sizeof(method), "%s", body == NULL ? "GET" : "POST");
-    ret = HttpClientRequest(method, fall_url, json_str, res, res_size, timeout);
+    ret = HttpRequest(method, fall_url, json_str, res, res_size, timeout);
 
     if (url == NULL && json_str != NULL) {
         free(json_str);

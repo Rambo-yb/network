@@ -7,10 +7,10 @@
 typedef struct {
     int size;
     char* buf;
-}HttpClientResponse;
+}HttpResponse;
 
-static int HttpClientResponseCb(void* ptr, int size, int nmemb, void* userp) {
-    HttpClientResponse* resp = (HttpClientResponse*)userp;
+static int HttpResponseCb(void* ptr, int size, int nmemb, void* userp) {
+    HttpResponse* resp = (HttpResponse*)userp;
     char* p = (char*) realloc(resp->buf, resp->size + size*nmemb + 1);
     CHECK_POINTER(p, 0);
 
@@ -22,7 +22,7 @@ static int HttpClientResponseCb(void* ptr, int size, int nmemb, void* userp) {
     return size*nmemb;
 }
 
-int HttpClientRequest(const char* method, const char* url, const char* body, char* res, int res_size, int timeout){
+int HttpRequest(const char* method, const char* url, const char* body, char* res, int res_size, int timeout){
     CHECK_POINTER(url, -1);
     CHECK_POINTER(res, -1);
 
@@ -31,15 +31,15 @@ int HttpClientRequest(const char* method, const char* url, const char* body, cha
     CURL *curl = curl_easy_init();
     CHECK_POINTER(curl, -1);
 
-    HttpClientResponse resp;
-    memset(&resp, 0, sizeof(HttpClientResponse));
+    HttpResponse resp;
+    memset(&resp, 0, sizeof(HttpResponse));
     resp.buf = (char*)calloc(1, sizeof(char));
     CHECK_POINTER_GO(resp.buf, end);
 
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "http");
+    curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, timeout);
 
     struct curl_slist *headers = NULL;
@@ -49,7 +49,7 @@ int HttpClientRequest(const char* method, const char* url, const char* body, cha
     }
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HttpClientResponseCb);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HttpResponseCb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&resp);
 
     CURLcode curl_res = curl_easy_perform(curl);
@@ -69,4 +69,94 @@ end:
 
     curl_easy_cleanup(curl);
     return ret;
+}
+
+typedef struct {
+    CURL* curl;
+    struct curl_slist* headers;
+    curl_mime* mime;
+}FormDataReqInfo;
+
+void* HttpFormDataRequestInit(const char* url, int timeout) {
+    FormDataReqInfo* info = (FormDataReqInfo*)malloc(sizeof(FormDataReqInfo));
+    CHECK_POINTER(info, NULL);
+    memset(info, 0, sizeof(FormDataReqInfo));
+
+    info->curl = curl_easy_init();
+    CHECK_POINTER_GO(info->curl, end);
+
+    info->mime = curl_mime_init(info->curl);
+    CHECK_POINTER_GO(info->mime, end);
+
+    curl_easy_setopt(info->curl, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(info->curl, CURLOPT_URL, url);
+    curl_easy_setopt(info->curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(info->curl, CURLOPT_DEFAULT_PROTOCOL, "https");
+    curl_easy_setopt(info->curl, CURLOPT_TIMEOUT_MS, timeout);
+
+    return info;
+end:
+    if (info->curl) {
+        curl_easy_cleanup(info->curl);
+    }
+
+    free(info);
+    return NULL;
+}
+
+
+void HttpFormDataRequestHeader(void* handle, const char* header) {
+    FormDataReqInfo* info = handle;
+    info->headers = curl_slist_append(info->headers, header);
+}
+
+void HttpFormDataRequestBody(void* handle, char* type, const char* key, const char* val, int len) {
+    FormDataReqInfo* info = handle;
+    curl_mimepart* part = curl_mime_addpart(info->mime);
+    curl_mime_name(part, key);
+    if (strcmp(type, "file") == 0) {
+        curl_mime_filedata(part, val);
+    } else if (strcmp(type, "text") == 0) {
+        curl_mime_data(part, val, CURL_ZERO_TERMINATED);
+    } else {
+        curl_mime_data(part, val, len);
+    }
+}
+
+int HttpFormDataExec(void* handle, char* res, int res_size){
+    FormDataReqInfo* info = handle;
+
+    HttpResponse resp;
+    memset(&resp, 0, sizeof(HttpResponse));
+    resp.buf = (char*)calloc(1, sizeof(char));
+    CHECK_POINTER(resp.buf, -1);
+
+    curl_easy_setopt(info->curl, CURLOPT_HTTPHEADER, info->headers);
+    curl_easy_setopt(info->curl, CURLOPT_MIMEPOST, info->mime);
+    curl_easy_setopt(info->curl, CURLOPT_WRITEFUNCTION, HttpResponseCb);
+    curl_easy_setopt(info->curl, CURLOPT_WRITEDATA, (void*)&resp);
+    
+    CURLcode curl_res = curl_easy_perform(info->curl);
+
+    snprintf(res, res_size, "%s", resp.buf);
+    if (resp.buf != NULL) {
+        free(resp.buf);
+    }
+    
+    return curl_res == CURLE_OK ? 0 : -1;
+}
+
+void HttpFormDataRequestUnInit(void* handle){
+    FormDataReqInfo* info = handle;
+    
+    if (info->mime) {
+        curl_mime_free(info->mime);
+    }
+    if (info->mime) {
+        curl_slist_free_all(info->headers);
+    }
+    if (info->curl) {
+        curl_easy_cleanup(info->curl);
+    }
+    free(info);
 }
