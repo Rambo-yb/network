@@ -95,6 +95,8 @@ int CjsonToStructOtherCtrl(cJSON* json, void* st) {
 
     OtherCtrl* other_ctrl = (OtherCtrl*)st;
     CJSON_GET_NUMBER(json, "defog_by_heat_enable", other_ctrl->defog_by_heat_enable, sizeof(other_ctrl->defog_by_heat_enable), end);
+    CJSON_GET_NUMBER(json, "heat_enable", other_ctrl->heat_enable, sizeof(other_ctrl->heat_enable), end);
+    CJSON_GET_NUMBER(json, "fan_enable", other_ctrl->fan_enable, sizeof(other_ctrl->fan_enable), end);
     
     return 0;
 end:

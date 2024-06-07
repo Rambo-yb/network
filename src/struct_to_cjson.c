@@ -126,6 +126,8 @@ int StructToCjsonOtherCtrl(void* st, cJSON** json) {
     CHECK_POINTER(new_json, -1);
 
     CJSON_SET_NUMBER(new_json, "defog_by_heat_enable", other_ctrl->defog_by_heat_enable, end);
+    CJSON_SET_NUMBER(new_json, "heat_enable", other_ctrl->heat_enable, end);
+    CJSON_SET_NUMBER(new_json, "fan_enable", other_ctrl->fan_enable, end);
 
     *json = new_json;
     return 0;
