@@ -26,13 +26,29 @@ typedef struct Areas {
     Area area[NET_AREA_NUM_MAX];
 }Areas;
 
-typedef struct PtzCtrl {
+
+typedef struct ConstantScan {
+    int value_type;
     double yaw;
-    double pitch;
+    Point pix;
+}ConstantScan;
+
+typedef struct FanScanning {
+    double start_angle;
+    double end_angle;
+}FanScanning;
+
+typedef struct PtzCtrl {
+    bool motor_enable;   
     int scan_mode;
-    double step;
-    bool motor_enable;    
+    ConstantScan constant_scan;
+    FanScanning fan_scanning;
+    double pitch;
+    double step; 
+    int speed;
+    int zero_falg;
 }PtzCtrl;
+
 
 typedef struct ChipCtrl {
     int contrast;
@@ -43,9 +59,13 @@ typedef struct ChipCtrl {
     bool hot_spot_track;
 }ChipCtrl;
 
+
 typedef struct OtherCtrl {
     bool defog_by_heat_enable;
+    bool heat_enable;
+    bool fan_enable;
 }OtherCtrl;
+
 
 typedef struct TrackingObject {
     int id_num;
@@ -58,6 +78,7 @@ typedef struct AlgorithmEnable {
     bool action_analyze_enable;
     TrackingObject tracking_object;
 }AlgorithmEnable;
+
 
 
 

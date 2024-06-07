@@ -45,11 +45,27 @@ int CjsonToStructPtzCtrl(cJSON* json, void* st) {
     CHECK_POINTER(st, -1);
 
     PtzCtrl* ptz_ctrl = (PtzCtrl*)st;
-    CJSON_GET_NUMBER(json, "yaw", ptz_ctrl->yaw, sizeof(ptz_ctrl->yaw), end);
-    CJSON_GET_NUMBER(json, "pitch", ptz_ctrl->pitch, sizeof(ptz_ctrl->pitch), end);
-    CJSON_GET_NUMBER(json, "scan_mode", ptz_ctrl->scan_mode, sizeof(ptz_ctrl->scan_mode), end);
-    CJSON_GET_NUMBER(json, "step", ptz_ctrl->step, sizeof(ptz_ctrl->step), end);
     CJSON_GET_NUMBER(json, "motor_enable", ptz_ctrl->motor_enable, sizeof(ptz_ctrl->motor_enable), end);
+    CJSON_GET_NUMBER(json, "scan_mode", ptz_ctrl->scan_mode, sizeof(ptz_ctrl->scan_mode), end);
+    CJSON_GET_NUMBER(json, "pitch", ptz_ctrl->pitch, sizeof(ptz_ctrl->pitch), end);
+    CJSON_GET_NUMBER(json, "step", ptz_ctrl->step, sizeof(ptz_ctrl->step), end);
+    CJSON_GET_NUMBER(json, "speed", ptz_ctrl->speed, sizeof(ptz_ctrl->speed), end);
+    CJSON_GET_NUMBER(json, "zero_falg", ptz_ctrl->zero_falg, sizeof(ptz_ctrl->zero_falg), end);
+
+    cJSON* constant_scan = cJSON_GetObjectItemCaseSensitive(json, "constant_scan");
+    CHECK_POINTER(constant_scan, -1);
+    CJSON_GET_NUMBER(constant_scan, "value_type", ptz_ctrl->constant_scan.value_type, sizeof(ptz_ctrl->constant_scan.value_type), end);
+    CJSON_GET_NUMBER(constant_scan, "yaw", ptz_ctrl->constant_scan.yaw, sizeof(ptz_ctrl->constant_scan.yaw), end);
+
+    cJSON* pix = cJSON_GetObjectItemCaseSensitive(constant_scan, "pix");
+    CHECK_POINTER(pix, -1);
+    CJSON_GET_NUMBER(pix, "x", ptz_ctrl->constant_scan.pix.x, sizeof(ptz_ctrl->constant_scan.pix.x), end);
+    CJSON_GET_NUMBER(pix, "y", ptz_ctrl->constant_scan.pix.y, sizeof(ptz_ctrl->constant_scan.pix.y), end);
+
+    cJSON* fan_scanning = cJSON_GetObjectItemCaseSensitive(json, "fan_scanning");
+    CHECK_POINTER(fan_scanning, -1);
+    CJSON_GET_NUMBER(fan_scanning, "start_angle", ptz_ctrl->fan_scanning.start_angle, sizeof(ptz_ctrl->fan_scanning.start_angle), end);
+    CJSON_GET_NUMBER(fan_scanning, "end_angle", ptz_ctrl->fan_scanning.end_angle, sizeof(ptz_ctrl->fan_scanning.end_angle), end);
     
     return 0;
 end:

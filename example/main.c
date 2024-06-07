@@ -39,11 +39,20 @@ int GetConfig(char* sub_key, void* in, void* out, char* res, int res_size){
         memcpy(out, &enable, sizeof(AlgorithmEnable));
     } else if (strcmp(sub_key, "ptz_ctrl") == 0) {
         PtzCtrl ptz_ctrl;
-        ptz_ctrl.yaw = 180;
         ptz_ctrl.pitch = 0;
         ptz_ctrl.scan_mode = 1;
         ptz_ctrl.step =10.0;
         ptz_ctrl.motor_enable = 1;
+        ptz_ctrl.speed = 244;
+        ptz_ctrl.zero_falg = 0;
+
+        ptz_ctrl.constant_scan.value_type = 0;
+        ptz_ctrl.constant_scan.yaw =22.2;
+        ptz_ctrl.constant_scan.pix.x = 20;
+        ptz_ctrl.constant_scan.pix.y = 50;
+        
+        ptz_ctrl.fan_scanning.start_angle = 20;
+        ptz_ctrl.fan_scanning.end_angle = 240.4;
         memcpy(out, &ptz_ctrl, sizeof(PtzCtrl));
     } else if (strcmp(sub_key, "chip_ctrl") == 0) {
         ChipCtrl chip_ctrl;

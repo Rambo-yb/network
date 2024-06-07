@@ -59,15 +59,39 @@ int StructToCjsonPtzCtrl(void* st, cJSON** json) {
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
-    CJSON_SET_NUMBER(new_json, "yaw", ptz_ctrl->yaw, end);
-    CJSON_SET_NUMBER(new_json, "pitch", ptz_ctrl->pitch, end);
-    CJSON_SET_NUMBER(new_json, "scan_mode", ptz_ctrl->scan_mode, end);
-    CJSON_SET_NUMBER(new_json, "step", ptz_ctrl->step, end);
     CJSON_SET_NUMBER(new_json, "motor_enable", ptz_ctrl->motor_enable, end);
+    CJSON_SET_NUMBER(new_json, "scan_mode", ptz_ctrl->scan_mode, end);
+    CJSON_SET_NUMBER(new_json, "pitch", ptz_ctrl->pitch, end);
+    CJSON_SET_NUMBER(new_json, "step", ptz_ctrl->step, end);
+    CJSON_SET_NUMBER(new_json, "speed", ptz_ctrl->speed, end);
+    CJSON_SET_NUMBER(new_json, "zero_falg", ptz_ctrl->zero_falg, end);
+    
+    cJSON* sub_scan_json = cJSON_CreateObject();
+    CHECK_POINTER_GO(sub_scan_json, end);
+    CJSON_SET_NUMBER(sub_scan_json, "value_type", ptz_ctrl->constant_scan.value_type, end_sub_scan);
+    CJSON_SET_NUMBER(sub_scan_json, "yaw", ptz_ctrl->constant_scan.yaw, end_sub_scan);
+    
+    cJSON* pix = cJSON_CreateObject();
+    CHECK_POINTER_GO(pix, end_sub_scan);
+    CJSON_SET_NUMBER(pix, "x", ptz_ctrl->constant_scan.pix.x, end_pix);
+    CJSON_SET_NUMBER(pix, "y", ptz_ctrl->constant_scan.pix.y, end_pix);
+
+    CHECK_BOOL_GO(cJSON_AddItemToObject(sub_scan_json, "pix", pix), end_pix);
+    CHECK_BOOL_GO(cJSON_AddItemToObject(new_json, "constant_scan", sub_scan_json), end_sub_scan);
+
+    sub_scan_json = cJSON_CreateObject();
+    CHECK_POINTER_GO(sub_scan_json, end);
+    CJSON_SET_NUMBER(sub_scan_json, "start_angle", ptz_ctrl->fan_scanning.start_angle, end_sub_scan);
+    CJSON_SET_NUMBER(sub_scan_json, "end_angle", ptz_ctrl->fan_scanning.end_angle, end_sub_scan);
+    CHECK_BOOL_GO(cJSON_AddItemToObject(new_json, "fan_scanning", sub_scan_json), end_sub_scan);
 
     *json = new_json;
 
     return 0;
+end_pix:
+    cJSON_free(pix);
+end_sub_scan:
+    cJSON_free(sub_scan_json);
 end:
     cJSON_free(new_json);
     return -1;
