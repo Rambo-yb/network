@@ -119,7 +119,7 @@ static void NetworkSetConfig(void* c, void* data) {
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
         snprintf(msg, sizeof(msg), "ctrl request not support");
-        LOG_ERR("ctrl request not support\n");
+        LOG_ERR("ctrl request not support");
         goto end;
     }
 
@@ -170,7 +170,7 @@ static void NetworkGetConfig(void* c, void* data) {
     
     if (i >= sizeof(kNetworkSubInfo) / sizeof(NetworkSubInfo)) {
         snprintf(msg, sizeof(msg), "ctrl request not support");
-        LOG_ERR("ctrl request not support\n");
+        LOG_ERR("ctrl request not support");
         goto end;
     }
 
@@ -259,12 +259,13 @@ static HttpServerUrlInfo kUrlInfo[] ={
 };
 
 int NetworkInit(NetworkOperFunc* func) {
+    log_init("/tmp/network.log", 512*1024, 3);
     memcpy(&kNetworkMng.func, func, sizeof(NetworkOperFunc));
 
     HttpServerInit(":8080");
     for(int i = 0; i < sizeof(kUrlInfo) / sizeof(HttpServerUrlInfo); i++) {
         HttpServerUrlRegister(kUrlInfo[i].method, kUrlInfo[i].url, kUrlInfo[i].cb);
-        LOG_INFO("server listen url, method:%s, urI:%s\n", kUrlInfo[i].method, kUrlInfo[i].url);
+        LOG_INFO("server listen url, method:%s, urI:%s", kUrlInfo[i].method, kUrlInfo[i].url);
     }
 
     return 0;

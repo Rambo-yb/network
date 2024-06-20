@@ -7,7 +7,7 @@ int CjsonToStructAreas(cJSON* json, void* st) {
     CHECK_POINTER(st, -1);
 
     if (!cJSON_IsArray(json)) {
-        LOG_ERR("json is not array!\n");
+        LOG_ERR("json is not array!");
         return -1;
     }
 

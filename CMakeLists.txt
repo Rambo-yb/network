@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(network)
 
+add_definitions(-DUSE_EASYLOGGER)
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/example MAIN_SRC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRC)
 
@@ -10,6 +12,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/general_src/list SRC)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/third_src/cjson SRC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/third_src/mongoose SRC)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/third_src/easylogger SRC)
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -21,6 +24,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/general_src/list)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_src/cjson)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_src/mongoose)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_src/easylogger)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/_install/curl/include)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/_install/curl/lib)
