@@ -64,13 +64,15 @@ int ListPush(void* list_head, void* data, int data_size) {
 }
 
 int ListPop(void* list_head, void* data, int data_size) {
-    if (list_head == NULL || data == NULL) {
+    if (list_head == NULL || ((ListNode*)list_head)->next_node == NULL || data == NULL) {
         return -1;
     }
 
+    ListNode* pre_node = NULL;
     ListNode* cur_node = (ListNode*) list_head;
     while (cur_node->next_node != NULL)
     {
+        pre_node = cur_node;
         cur_node = cur_node->next_node;
     }
 
@@ -82,6 +84,7 @@ int ListPop(void* list_head, void* data, int data_size) {
 
     free(cur_node->data);
     free(cur_node);
+    pre_node->next_node = NULL;
 
     return 0;
 }
