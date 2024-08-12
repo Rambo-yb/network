@@ -48,7 +48,7 @@ void HttpServerGetUri(void* data, char* uri, int size);
  * @param [out] body 消息头
  * @param [in] size 消息头buff空间大小
  */
-void HttpServerGethead(void* data, char* head, int size);
+void HttpServerGetHead(void* data, char* head, int size);
 
 /**
  * @brief http 获取消息体
@@ -59,8 +59,16 @@ void HttpServerGethead(void* data, char* head, int size);
 void HttpServerGetBody(void* data, char* body, int size);
 
 /**
+ * @brief http 获取get参数
+ * @param [in] data http 回调传出的消息数据
+ * @param [out] query get参数
+ * @param [in] size 消息体buff空间大小
+ */
+void HttpServerGetQuery(void* data, char* query, int size);
+
+/**
  * @brief http 回复函数
- * @param [in] data http 回调传出的连接句柄
+ * @param [in] c http 回调传出的连接句柄
  * @param [in] code 状态码
  * @param [in] header 回复的自定义头
  * @param [in] body 回复的消息体

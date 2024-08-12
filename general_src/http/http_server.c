@@ -33,7 +33,9 @@ static void cb(struct mg_connection *c, int ev, void *ev_data) {
             if (info != NULL 
                 && mg_match(hm->uri, mg_str(info->url), NULL) 
                 && mg_match(hm->method, mg_str(info->method), NULL)) {
-                LOG_INFO("method:%.*s, uri:%.*s, body:%.*s", hm->method.len, hm->method.buf, hm->uri.len, hm->uri.buf, hm->body.len, hm->body.buf);
+                LOG_INFO("method:%.*s, uri:%.*s, query:%.*s, proto:%.*s, body:%.*s", 
+                    hm->method.len, hm->method.buf, hm->uri.len, hm->uri.buf, 
+                    hm->query.len, hm->query.buf, hm->proto.len, hm->proto.buf, hm->body.len, hm->body.buf);
                 info->cb(c, ev_data);
                 
                 break;
@@ -92,7 +94,7 @@ void HttpServerGetUri(void* data, char* uri, int size) {
     snprintf(uri, size, "%.*s", hm->uri.len, hm->uri.buf);
 }
 
-void HttpServerGethead(void* data, char* head, int size) {
+void HttpServerGetHead(void* data, char* head, int size) {
     CHECK_POINTER(data, (void)0);
     CHECK_POINTER(head, (void)0);
     struct mg_http_message *hm = (struct mg_http_message *)data;
@@ -104,6 +106,13 @@ void HttpServerGetBody(void* data, char* body, int size) {
     CHECK_POINTER(body, (void)0);
     struct mg_http_message *hm = (struct mg_http_message *)data;
     snprintf(body, size, "%.*s", hm->body.len, hm->body.buf);
+}
+
+void HttpServerGetQuery(void* data, char* query, int size) {
+    CHECK_POINTER(data, (void)0);
+    CHECK_POINTER(query, (void)0);
+    struct mg_http_message *hm = (struct mg_http_message *)data;
+    snprintf(query, size, "%.*s", hm->query.len, hm->query.buf);
 }
 
 void HttpServerReplay(void* c, int code, char* header, char* body){
