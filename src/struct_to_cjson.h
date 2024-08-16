@@ -8,15 +8,31 @@
 extern "C" {
 #endif
 
-int StructToCjsonAreas(void* st, cJSON** json_);
+/** 能力 **/
+int StructToCjsonSupportFunction(void* st, cJSON** json);
 
-int StructToCjsonPtzCtrl(void* st, cJSON** json);
+/** 系统 **/
+int StructToCjsonDeviceInfo(void* st, cJSON** json);
 
-int StructToCjsonChipCtrl(void* st, cJSON** json);
+/** 配置 **/
+int StructToCjsonSystemInfo(void* st, cJSON** json);
 
-int StructToCjsonOtherCtrl(void* st, cJSON** json);
+int StructToCjsonCameraChipInfo(void* st, cJSON** json);
 
-int StructToCjsonAlgorithmEnable(void* st, cJSON** json);
+int StructToCjsonPosition(void* st, cJSON** json);
+
+int StructToCjsonCalibrationGun(void* st, cJSON** json);
+
+int StructToCjsonPtzInfo(void* st, cJSON** json);
+
+int StructToCjsonAreas(void* st, cJSON** json);
+
+int StructToCjsonOtherConfig(void* st, cJSON** json);
+
+int StructToCjsonNetworkInfo(void* st, cJSON** json);
+
+int StructToCjsonAlgorithm(void* st, cJSON** json);
+
 
 int StructToCjsonAlarmInfo(void* st, cJSON** json);
 

@@ -20,7 +20,7 @@ void* ListCreate() {
 
 void ListDestory(void* list_head){
     if (list_head == NULL) {
-        return -1;
+        return ;
     }
     
     ListNode* cur_node = (ListNode*) list_head;

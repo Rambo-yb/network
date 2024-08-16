@@ -35,6 +35,14 @@ void HttpServerUnInit();
 void HttpServerUrlRegister(char* method, char* uri, HttpServerUrlProcCb cb);
 
 /**
+ * @brief http 获取请求方式
+ * @param [in] data http 回调传出的消息数据
+ * @param [out] method 请求方式
+ * @param [in] size method buff空间大小
+ */
+void HttpServerGetMethod(void* data, char* method, int size);
+
+/**
  * @brief http 获取uri
  * @param [in] data http 回调传出的消息数据
  * @param [out] uri uri

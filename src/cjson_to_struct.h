@@ -8,15 +8,26 @@
 extern "C" {
 #endif
 
+/** 配置 **/
+int CjsonToStructSystemInfo(cJSON* json, void* st);
+
+int CjsonToStructCameraChipInfo(cJSON* json, void* st);
+
+int CjsonToStructPosition(cJSON* json, void* st);
+
+int CjsonToStructCalibrationGun(cJSON* json, void* st);
+
+int CjsonToStructPtzInfo(cJSON* json, void* st);
+
 int CjsonToStructAreas(cJSON* json, void* st);
 
-int CjsonToStructPtzCtrl(cJSON* json, void* st);
+int CjsonToStructOtherConfig(cJSON* json, void* st);
 
-int CjsonToStructChipCtrl(cJSON* json, void* st);
+int CjsonToStructNetworkInfo(cJSON* json, void* st);
 
-int CjsonToStructOtherCtrl(cJSON* json, void* st);
+int CjsonToStructAlgorithm(cJSON* json, void* st);
 
-int CjsonToStructAlgorithmEnable(cJSON* json, void* st);
+
 
 int CjsonToStructAlarmInfo(cJSON* json, void* st);
 

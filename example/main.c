@@ -4,85 +4,130 @@
 #include "network.h"
 #include "network_common.h"
 
-int SetConfig(char* sub_key, void* in, void* out, char* res, int res_size){
+typedef struct {
+    SystemInfo system_info;
+    CameraChipInfo camera_chip_info;
+    Position position;
+    CalibrationGun calibration_gun;
+    PtzInfo ptz_info;
+    Areas areas;
+    OtherConfig other_config;
+    NetworkInfo network_info;
+    Algorithm algorithm;
+}Mng;
+static Mng kMng;
+
+int GetAbility(SupportFunction* func) {
     return 0;
 }
 
-int GetConfig(char* sub_key, void* in, void* out, char* res, int res_size){
-    if (strcmp(sub_key, "areas") == 0) {
-        Areas areas;
-        areas.area_num = 2;
-        for (int i = 0; i < areas.area_num; i++)
-        {
-            snprintf(areas.area[i].area_name, sizeof(areas.area[i].area_name), "%s", i == 0 ? "abc" : "qwe");
-            areas.area[i].enable = 1;
-            areas.area[i].point_num_max = 8;
-            areas.area[i].point_num = 4;
-            for (int j = 0; j < areas.area[i].point_num; j++)
-            {
-                areas.area[i].point[j].x = (i+j)*100;
-                areas.area[i].point[j].y = (i+j)*200;
-            }
-        }
-
-        memcpy(out, &areas, sizeof(Areas));
-    } else if (strcmp(sub_key, "algorithm_enable") == 0) {
-        AlgorithmEnable enable;
-        enable.detection_enable = 0;
-        enable.tracking_enable = 1;
-        enable.action_analyze_enable = 1;
-        enable.tracking_object.id_num = 4;
-        for (int i = 0; i < enable.tracking_object.id_num; i++)
-        {
-            enable.tracking_object.id[i] = i;
-        }
-        memcpy(out, &enable, sizeof(AlgorithmEnable));
-    } else if (strcmp(sub_key, "ptz_ctrl") == 0) {
-        PtzCtrl ptz_ctrl;
-        ptz_ctrl.pitch = 0;
-        ptz_ctrl.scan_mode = 1;
-        ptz_ctrl.step =10.0;
-        ptz_ctrl.motor_enable = 1;
-        ptz_ctrl.speed = 244;
-        ptz_ctrl.zero_falg = 0;
-
-        ptz_ctrl.constant_scan.value_type = 0;
-        ptz_ctrl.constant_scan.yaw =22.2;
-        ptz_ctrl.constant_scan.pix.x = 20;
-        ptz_ctrl.constant_scan.pix.y = 50;
-        
-        ptz_ctrl.fan_scanning.start_angle = 20;
-        ptz_ctrl.fan_scanning.end_angle = 240.4;
-        memcpy(out, &ptz_ctrl, sizeof(PtzCtrl));
-    } else if (strcmp(sub_key, "chip_ctrl") == 0) {
-        ChipCtrl chip_ctrl;
-        chip_ctrl.contrast = 50;
-        chip_ctrl.brightness = 50;
-        chip_ctrl.polarity = 1;
-        chip_ctrl.bad_spot_threshold = 29;
-        chip_ctrl.bad_spot_oper = 2;
-        chip_ctrl.hot_spot_track = 0;
-        memcpy(out, &chip_ctrl, sizeof(ChipCtrl));
-    } else if (strcmp(sub_key, "other_ctrl") == 0) {
-        OtherCtrl other_ctrl;
-        other_ctrl.defog_by_heat_enable = 1;
-        memcpy(out, &other_ctrl, sizeof(OtherCtrl));
+int SystemRequest(NetworkSystem* sys) {
+    printf("system request type:%d\n", sys->type);
+    if (sys->type == NETWORK_SYSTEM_DEVICE_INFO) {
+        snprintf(sys->out.device_info.soft_version, sizeof(sys->out.device_info.soft_version), "V01.10");
+        snprintf(sys->out.device_info.hard_version, sizeof(sys->out.device_info.hard_version), "V00.01");
+        snprintf(sys->out.device_info.serial_number, sizeof(sys->out.device_info.serial_number), "1357924680");
+    } else if (sys->type == NETWORK_SYSTEM_GET_RTSP_URL) {
+        snprintf(sys->out.rtsp_url, sizeof(sys->out.rtsp_url), "rtsp://192.168.100.5/live/main_stream");
     }
     return 0;
 }
 
-int Upgrade(char* sub_key, void* in, void* out, char* res, int res_size){
+int SetConfig(NetworkConfigType type, void* conf, int size) {
+    switch (type)
+    {
+    case NETWORK_CONFIG_SYSTEM_INFO:
+        memcpy(&kMng.system_info, conf, size);
+        break;
+    case NETWORK_CONFIG_CAMERA_CHIP_INFO:
+        memcpy(&kMng.camera_chip_info, conf, size);
+        break;
+    case NETWORK_CONFIG_POSITION:
+        memcpy(&kMng.position, conf, size);
+        break;
+    case NETWORK_CONFIG_CALIBRATION_GUN:
+        memcpy(&kMng.calibration_gun, conf, size);
+        break;
+    case NETWORK_CONFIG_PTZ_INFO:
+        memcpy(&kMng.ptz_info, conf, size);
+        break;
+    case NETWORK_CONFIG_AREAS:
+        memcpy(&kMng.areas, conf, size);
+        break;
+    case NETWORK_CONFIG_OTHER_INFO:
+        memcpy(&kMng.other_config, conf, size);
+        break;
+    case NETWORK_CONFIG_NETWORK:
+        memcpy(&kMng.network_info, conf, size);
+        break;
+    case NETWORK_CONFIG_ALGORITHM:
+        memcpy(&kMng.algorithm, conf, size);
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+int GetConfig(NetworkConfigType type, void* conf, int size) {
+    switch (type)
+    {
+    case NETWORK_CONFIG_SYSTEM_INFO:
+        memcpy(conf, &kMng.system_info, size);
+        break;
+    case NETWORK_CONFIG_CAMERA_CHIP_INFO:
+        memcpy(conf, &kMng.camera_chip_info, size);
+        break;
+    case NETWORK_CONFIG_POSITION:
+        memcpy(conf, &kMng.position, size);
+        break;
+    case NETWORK_CONFIG_CALIBRATION_GUN:
+        memcpy(conf, &kMng.calibration_gun, size);
+        break;
+    case NETWORK_CONFIG_PTZ_INFO:
+        memcpy(conf, &kMng.ptz_info, size);
+        break;
+    case NETWORK_CONFIG_AREAS:
+        memcpy(conf, &kMng.areas, size);
+        break;
+    case NETWORK_CONFIG_OTHER_INFO:
+        memcpy(conf, &kMng.other_config, size);
+        break;
+    case NETWORK_CONFIG_NETWORK:
+        memcpy(conf, &kMng.network_info, size);
+        break;
+    case NETWORK_CONFIG_ALGORITHM:
+        memcpy(conf, &kMng.algorithm, size);
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+int ControlRequest(NetworkContorl* ctrl) {
+    printf("control request type:%d\n", ctrl->type);
+    if (ctrl->type == NETWORK_CONTORL_BAD_PIX && ctrl->in.bad_pix_operation == BAD_PIX_OPERATION_GET) {
+        ctrl->out.bad_pix_num = 123;
+    } else if (ctrl->type == NETWORK_CONTORL_LASER_RANGING && ctrl->in.laser_ranging.mode == LASER_RANGING_SINGLE) {
+        ctrl->out.distence = 12345;
+    }
+    return 0;
+}
+
+int Upgrade(const char* path) {
     return 0;
 }
 
 int main(int argc, char** argv) {
-    NetworkOperFunc func = {
-        .get_config_cb = GetConfig,
-        .set_config_cb = SetConfig,
-        .upgrade_cb = Upgrade
-    };
+    NetworkInit();
 
-    NetworkInit(&func);
+    NetworkOperationRegister(NETWORK_OPERATION_GET_ABILITY, GetAbility);
+    NetworkOperationRegister(NETWORK_OPERATION_SYSTEM_REQUEST, SystemRequest);
+    NetworkOperationRegister(NETWORK_OPERATION_GET_CONFIG, SetConfig);
+    NetworkOperationRegister(NETWORK_OPERATION_SET_CONFIG, GetConfig);
+    NetworkOperationRegister(NETWORK_OPERATION_CONTORL_REQUEST, ControlRequest);
+    NetworkOperationRegister(NETWORK_OPERATION_UPGRADE, Upgrade);
 
     while (1) {
         sleep(1);

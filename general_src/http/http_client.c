@@ -23,18 +23,18 @@ static int HttpResponseCb(void* ptr, int size, int nmemb, void* userp) {
 }
 
 int HttpRequest(const char* method, const char* url, const char* body, char* res, int res_size, int timeout){
-    CHECK_POINTER(url, -1);
-    CHECK_POINTER(res, -1);
+    CHECK_POINTER(url, return -1);
+    CHECK_POINTER(res, return -1);
 
     int ret = -1;
 
     CURL *curl = curl_easy_init();
-    CHECK_POINTER(curl, -1);
+    CHECK_POINTER(curl, return -1);
 
     HttpResponse resp;
     memset(&resp, 0, sizeof(HttpResponse));
     resp.buf = (char*)calloc(1, sizeof(char));
-    CHECK_POINTER_GO(resp.buf, end);
+    CHECK_POINTER(resp.buf, goto end);
 
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -53,7 +53,7 @@ int HttpRequest(const char* method, const char* url, const char* body, char* res
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&resp);
 
     CURLcode curl_res = curl_easy_perform(curl);
-    CHECK_LT_GO(curl_res, CURLE_OK, end);
+    CHECK_LT(curl_res, CURLE_OK, goto end);
     
     snprintf(res, res_size, "%s", resp.buf);
 
@@ -83,10 +83,10 @@ void* HttpFormDataRequestInit(const char* url, int timeout) {
     memset(info, 0, sizeof(FormDataReqInfo));
 
     info->curl = curl_easy_init();
-    CHECK_POINTER_GO(info->curl, end);
+    CHECK_POINTER(info->curl, goto end);
 
     info->mime = curl_mime_init(info->curl);
-    CHECK_POINTER_GO(info->mime, end);
+    CHECK_POINTER(info->mime, goto end);
 
     curl_easy_setopt(info->curl, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(info->curl, CURLOPT_URL, url);
@@ -129,7 +129,7 @@ int HttpFormDataExec(void* handle, char* res, int res_size){
     HttpResponse resp;
     memset(&resp, 0, sizeof(HttpResponse));
     resp.buf = (char*)calloc(1, sizeof(char));
-    CHECK_POINTER(resp.buf, -1);
+    CHECK_POINTER(resp.buf, return -1);
 
     curl_easy_setopt(info->curl, CURLOPT_HTTPHEADER, info->headers);
     curl_easy_setopt(info->curl, CURLOPT_MIMEPOST, info->mime);

@@ -87,30 +87,37 @@ void HttpServerUrlRegister(char* method, char* url, HttpServerUrlProcCb cb) {
     pthread_mutex_unlock(&kHttpServerMng.mutex);
 }
 
+void HttpServerGetMethod(void* data, char* method, int size) {
+    CHECK_POINTER(data, return);
+    CHECK_POINTER(method, return);
+    struct mg_http_message *hm = (struct mg_http_message *)data;
+    snprintf(method, size, "%.*s", hm->method.len, hm->method.buf);
+}
+
 void HttpServerGetUri(void* data, char* uri, int size) {
-    CHECK_POINTER(data, (void)0);
-    CHECK_POINTER(uri, (void)0);
+    CHECK_POINTER(data, return);
+    CHECK_POINTER(uri, return);
     struct mg_http_message *hm = (struct mg_http_message *)data;
     snprintf(uri, size, "%.*s", hm->uri.len, hm->uri.buf);
 }
 
 void HttpServerGetHead(void* data, char* head, int size) {
-    CHECK_POINTER(data, (void)0);
-    CHECK_POINTER(head, (void)0);
+    CHECK_POINTER(data, return);
+    CHECK_POINTER(head, return);
     struct mg_http_message *hm = (struct mg_http_message *)data;
     snprintf(head, size, "%.*s", hm->head.len, hm->head.buf);
 }
 
 void HttpServerGetBody(void* data, char* body, int size) {
-    CHECK_POINTER(data, (void)0);
-    CHECK_POINTER(body, (void)0);
+    CHECK_POINTER(data, return);
+    CHECK_POINTER(body, return);
     struct mg_http_message *hm = (struct mg_http_message *)data;
     snprintf(body, size, "%.*s", hm->body.len, hm->body.buf);
 }
 
 void HttpServerGetQuery(void* data, char* query, int size) {
-    CHECK_POINTER(data, (void)0);
-    CHECK_POINTER(query, (void)0);
+    CHECK_POINTER(data, return);
+    CHECK_POINTER(query, return);
     struct mg_http_message *hm = (struct mg_http_message *)data;
     snprintf(query, size, "%.*s", hm->query.len, hm->query.buf);
 }
