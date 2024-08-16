@@ -1,6 +1,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
 #include "network.h"
 #include "http_server.h"
 #include "http_client.h"
@@ -11,6 +18,9 @@
 #include "list.h"
 
 #define NETWORK_LIB_VERSION ("V1.0.1")
+#define NETWORK_HTTP_PORT (8080)
+#define NETWORK_DISCOVERY_PORT (6666)
+#define NETWORK_MULTICAST_IP ("239.255.255.222")
 
 typedef struct {
     char method[16];
@@ -24,9 +34,6 @@ typedef struct {
 }NetworkOperationInfo;
 
 typedef struct {
-    // 系统
-    DeviceInfo device_info;
-
     // 配置
     SystemInfo system_info;
     CameraChipInfo camera_chip_info;
@@ -41,6 +48,9 @@ typedef struct {
     void* operation_list;
     pthread_mutex_t mutex;
     char pc_http_url[256];
+    char device_addr[16];
+
+    pthread_t pthread_discovery_device;
 }NetworkMng;
 static NetworkMng kNetworkMng = {.mutex = PTHREAD_MUTEX_INITIALIZER};
 
@@ -532,24 +542,87 @@ static HttpServerUrlInfo kUrlInfo[] ={
     {.method = "POST", .url = "/dev_api/pc_info", .cb = NetworkPcInfo},
 };
 
-int NetworkInit() {
-    log_init("/tmp/network.log", 512*1024, 3);
+static void *NetworkDiscoveryDevice(void *arg) {
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    CHECK_LT(sockfd, 0, return NULL);
+
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(NETWORK_DISCOVERY_PORT);
+    CHECK_LT(bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)), 0, close(sockfd);return NULL);
+
+    struct ip_mreq mreq;
+    memset(&mreq, 0, sizeof(mreq));
+    mreq.imr_multiaddr.s_addr = inet_addr(NETWORK_MULTICAST_IP);
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+    CHECK_LT(setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)), 0, close(sockfd);return NULL);
+
+    LOG_INFO("-----------");
+    while (1) {
+        struct sockaddr_in client_addr;
+        memset(&client_addr, 0, sizeof(client_addr));
+        socklen_t addr_len = sizeof(struct sockaddr_in);
+        
+        char buffer[1024] = {0};
+        int ret = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &addr_len);
+        CHECK_LT(ret, 0, continue);
+        CHECK_EQ(strcmp(buffer, "discovery cdjp device"), 0, continue);
+
+        cJSON* json =  cJSON_CreateObject();
+        CHECK_POINTER(json, goto end);
+
+        LOG_INFO("-----------");
+        CJSON_SET_STRING(json, "device_addr", kNetworkMng.device_addr, goto end);
+        CJSON_SET_NUMBER(json, "http_port", NETWORK_HTTP_PORT, goto end);
+
+        char* buff = cJSON_PrintUnformatted(json);
+        CHECK_POINTER(buff, goto end);
+
+        LOG_INFO("buff:%s", buff);
+        sendto(sockfd, buff, strlen(buff), 0, (struct sockaddr *)&client_addr, addr_len);
+        free(buff);
+        
+    end:
+        cJSON_free(json);
+    }
+
+    close(sockfd);
+}
+
+int NetworkInit(char* addr, char* log_path) {
+    CHECK_POINTER(addr, return -1);
+    CHECK_POINTER(log_path, return -1);
+
+    log_init(log_path, 512*1024, 3);
+    snprintf(kNetworkMng.device_addr, sizeof(kNetworkMng.device_addr), "%s", addr);
 
     kNetworkMng.operation_list = ListCreate();
     CHECK_POINTER(kNetworkMng.operation_list, return -1);
 
-    HttpServerInit(":8080");
+    char http_server[32] = {0};
+    snprintf(http_server, sizeof(http_server), ":%d", NETWORK_HTTP_PORT);
+    HttpServerInit(http_server);
     for(int i = 0; i < sizeof(kUrlInfo) / sizeof(HttpServerUrlInfo); i++) {
         HttpServerUrlRegister(kUrlInfo[i].method, kUrlInfo[i].url, kUrlInfo[i].cb);
         LOG_INFO("server listen url, method:%s, uri:%s", kUrlInfo[i].method, kUrlInfo[i].url);
     }
+
+    pthread_create(&kNetworkMng.pthread_discovery_device, NULL, NetworkDiscoveryDevice, NULL);
 
     LOG_INFO("network init success! ver:%s", NETWORK_LIB_VERSION);
     return 0;
 }
 
 void NetworkUnInit() {
+    if (kNetworkMng.pthread_discovery_device) {
+        pthread_cancel(kNetworkMng.pthread_discovery_device);
+        pthread_join(kNetworkMng.pthread_discovery_device, NULL);
+    }
+
     HttpServerUnInit();
+    ListDestory(kNetworkMng.operation_list);
 }
 
 void NetworkOperationRegister(NetworkOperationType type, void* cb) {

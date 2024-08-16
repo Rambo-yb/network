@@ -120,7 +120,7 @@ int Upgrade(const char* path) {
 }
 
 int main(int argc, char** argv) {
-    NetworkInit();
+    NetworkInit("192.168.100.5", "/tmp/network.log");
 
     NetworkOperationRegister(NETWORK_OPERATION_GET_ABILITY, GetAbility);
     NetworkOperationRegister(NETWORK_OPERATION_SYSTEM_REQUEST, SystemRequest);
