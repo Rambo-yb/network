@@ -9,8 +9,9 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 #include "network.h"
+#include "network_upload.h"
+#include "network_download.h"
 #include "http_server.h"
-#include "http_client.h"
 #include "cjson_common.h"
 #include "check_common.h"
 #include "struct_to_cjson.h"
@@ -46,13 +47,14 @@ typedef struct {
     Algorithm algorithm;
 
     void* operation_list;
-    pthread_mutex_t mutex;
-    char pc_http_url[256];
+    pthread_mutex_t oper_mutex;
+
     char device_addr[16];
 
     pthread_t pthread_discovery_device;
+    pthread_t pthread_upload;
 }NetworkMng;
-static NetworkMng kNetworkMng = {.mutex = PTHREAD_MUTEX_INITIALIZER};
+static NetworkMng kNetworkMng = {.oper_mutex = PTHREAD_MUTEX_INITIALIZER};
 
 typedef int (*StructToCjsonCb)(void*, cJSON**);
 typedef int (*CjsonToStructCb)(cJSON*, void*);
@@ -96,7 +98,7 @@ static NetworkOperationSubInfo kNetworkOperationSubInfo[] = {
     {.type = NETWORK_CONTORL_TRACKING, .name = "tracking_object"},
 };
 
-static int NetworkGetOperationType(char* name) {
+static int NetworkGetOperationSubByName(char* name) {
     int i = 0;
     for (; i < sizeof(kNetworkOperationSubInfo) / sizeof(NetworkOperationSubInfo); i++) {
         if (strcmp(name, kNetworkOperationSubInfo[i].name) == 0) {
@@ -106,7 +108,7 @@ static int NetworkGetOperationType(char* name) {
     return (i >= sizeof(kNetworkOperationSubInfo) / sizeof(NetworkOperationSubInfo)) ? -1 : i;
 }
 
-static void* NetworkGetOperation(int type) {
+static void* NetworkGetOperationCb(int type) {
     NetworkOperationInfo* oper_info = NULL;
     int list_size = ListSize(kNetworkMng.operation_list);
     for (int i = 0; i < list_size; i++) {
@@ -166,8 +168,8 @@ static void NetworkGetAbility(void* c, void* data) {
     CHECK_POINTER(json, goto end);
 
     int i = 0;
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    NetworkOperationInfo* oper_info = NetworkGetOperation(NETWORK_OPERATION_GET_ABILITY);
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    NetworkOperationInfo* oper_info = NetworkGetOperationCb(NETWORK_OPERATION_GET_ABILITY);
     if (oper_info == NULL || oper_info->cb == NULL) {
         snprintf(msg, sizeof(msg), "http server not support operation");
         LOG_ERR("http server not support operation");
@@ -178,7 +180,7 @@ static void NetworkGetAbility(void* c, void* data) {
     memset(&func, 0, sizeof(SupportFunction));
     NetworkOperationGetConfigCb cb = oper_info->cb;
     int ret = cb(kNetworkOperationSubInfo[i].type, kNetworkOperationSubInfo[i].st, kNetworkOperationSubInfo[i].st_size);
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     cJSON* conf_json = NULL;
     CHECK_LT(StructToCjsonSupportFunction(&func, &conf_json), 0, goto end);
@@ -189,7 +191,7 @@ static void NetworkGetAbility(void* c, void* data) {
     cJSON_free(json);
     return ;
 end_unlock:
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 end:
     if(json != NULL) {
         cJSON_free(json);
@@ -211,7 +213,7 @@ static void NetworkSystemRequest(void* c, void* data) {
     sscanf(query, "type=%64[^&]", type);
     
 
-    int index = NetworkGetOperationType(type);
+    int index = NetworkGetOperationSubByName(type);
     if (index < 0) {
         snprintf(msg, sizeof(msg), "ctrl request not support");
         LOG_ERR("ctrl request not support");
@@ -225,8 +227,8 @@ static void NetworkSystemRequest(void* c, void* data) {
         sscanf(query, "%*[^&],time=%d", &network_sys.in.time);
     }
 
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    NetworkOperationInfo* oper_info = NetworkGetOperation(NETWORK_OPERATION_SYSTEM_REQUEST);
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    NetworkOperationInfo* oper_info = NetworkGetOperationCb(NETWORK_OPERATION_SYSTEM_REQUEST);
     if (oper_info == NULL || oper_info->cb == NULL) {
         snprintf(msg, sizeof(msg), "http server not support operation");
         LOG_ERR("http server not support operation");
@@ -236,7 +238,7 @@ static void NetworkSystemRequest(void* c, void* data) {
     NetworkOperationSystemCb cb = oper_info->cb;
     int ret = cb(&network_sys);
     CHECK_LT(ret, 0, goto end_unlock);
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     if (network_sys.type == NETWORK_SYSTEM_GET_RTSP_URL) {
         cJSON* json = cJSON_CreateObject();
@@ -262,7 +264,7 @@ static void NetworkSystemRequest(void* c, void* data) {
     
     return ;
 end_unlock:
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 end:
     NetworkReplay(c, 500, NETWORK_REPLAY_STR, "", msg);
 }
@@ -286,36 +288,36 @@ static void NetworkSetConfig(void* c, void* data) {
     cJSON* conf_json = cJSON_GetObjectItemCaseSensitive(json, "config_info");
     CHECK_POINTER(conf_json, goto end);
     
-    int i = NetworkGetOperationType(conf_name);
-    if (i < 0) {
+    int index = NetworkGetOperationSubByName(conf_name);
+    if (index < 0) {
         snprintf(msg, sizeof(msg), "ctrl request not support");
         LOG_ERR("ctrl request not support");
         goto end;
     }
 
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    NetworkOperationInfo* oper_info = NetworkGetOperation(NETWORK_OPERATION_SET_CONFIG);
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    NetworkOperationInfo* oper_info = NetworkGetOperationCb(NETWORK_OPERATION_SET_CONFIG);
     if (oper_info == NULL || oper_info->cb == NULL) {
         snprintf(msg, sizeof(msg), "http server not support operation");
         LOG_ERR("http server not support operation");
         goto end_unlock;
     }
 
-    memset(kNetworkOperationSubInfo[i].st, 0, kNetworkOperationSubInfo[i].st_size);
-    int ret = kNetworkOperationSubInfo[i].j2s_cb(conf_json, kNetworkOperationSubInfo[i].st);
+    memset(kNetworkOperationSubInfo[index].st, 0, kNetworkOperationSubInfo[index].st_size);
+    int ret = kNetworkOperationSubInfo[index].j2s_cb(conf_json, kNetworkOperationSubInfo[index].st);
     CHECK_LT(ret, 0, goto end_unlock);
 
     NetworkOperationSetConfigCb cb = oper_info->cb;
-    ret = cb(kNetworkOperationSubInfo[i].type, kNetworkOperationSubInfo[i].st, kNetworkOperationSubInfo[i].st_size);
+    ret = cb(kNetworkOperationSubInfo[index].type, kNetworkOperationSubInfo[index].st, kNetworkOperationSubInfo[index].st_size);
     CHECK_LT(ret, 0, goto end_unlock);
 
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     NetworkReplay(c, 200, NETWORK_REPLAY_STR, "", "success");
     cJSON_free(json);
     return ;
 end_unlock:
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 end:
     if(json != NULL) {
         cJSON_free(json);
@@ -340,15 +342,15 @@ static void NetworkGetConfig(void* c, void* data) {
     CJSON_GET_STRING(json, "conf_name", conf_name, sizeof(conf_name), goto end);
 
     cJSON* conf_json = NULL;
-    int i = NetworkGetOperationType(conf_name);
-    if (i < 0) {
+    int index = NetworkGetOperationSubByName(conf_name);
+    if (index < 0) {
         snprintf(msg, sizeof(msg), "ctrl request not support");
         LOG_ERR("ctrl request not support");
         goto end;
     }
 
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    NetworkOperationInfo* oper_info = NetworkGetOperation(NETWORK_OPERATION_GET_CONFIG);
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    NetworkOperationInfo* oper_info = NetworkGetOperationCb(NETWORK_OPERATION_GET_CONFIG);
     if (oper_info == NULL || oper_info->cb == NULL) {
         snprintf(msg, sizeof(msg), "http server not support operation");
         LOG_ERR("http server not support operation");
@@ -356,14 +358,14 @@ static void NetworkGetConfig(void* c, void* data) {
     }
 
     NetworkOperationGetConfigCb cb = oper_info->cb;
-    memset(kNetworkOperationSubInfo[i].st, 0, kNetworkOperationSubInfo[i].st_size);
-    int ret = cb(kNetworkOperationSubInfo[i].type, kNetworkOperationSubInfo[i].st, kNetworkOperationSubInfo[i].st_size);
+    memset(kNetworkOperationSubInfo[index].st, 0, kNetworkOperationSubInfo[index].st_size);
+    int ret = cb(kNetworkOperationSubInfo[index].type, kNetworkOperationSubInfo[index].st, kNetworkOperationSubInfo[index].st_size);
     CHECK_LT(ret, 0, goto end_unlock);
 
-    ret = kNetworkOperationSubInfo[i].s2j_cb(kNetworkOperationSubInfo[i].st, &conf_json);
+    ret = kNetworkOperationSubInfo[index].s2j_cb(kNetworkOperationSubInfo[index].st, &conf_json);
     CHECK_LT(ret, 0, goto end_unlock);
 
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     CHECK_BOOL(cJSON_AddItemToObject(json, conf_name, conf_json), cJSON_free(conf_json);goto end);
 
@@ -372,7 +374,7 @@ static void NetworkGetConfig(void* c, void* data) {
     cJSON_free(json);
     return ;
 end_unlock:
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 end:
     if(json != NULL) {
         cJSON_free(json);
@@ -408,7 +410,6 @@ static void NetworkControlRequest(void* c, void* data) {
     char method[8] = {0};
     HttpServerGetMethod(data, method, sizeof(method));
     
-    int index = 0;
     NetworkContorl ctrl;
     memset(&ctrl, 0, sizeof(NetworkContorl));
     if (strcmp(method, "POST") == 0) {
@@ -427,7 +428,7 @@ static void NetworkControlRequest(void* c, void* data) {
         char type[64] = {0};
         sscanf(query, "type=%64[^&]", type);
 
-        index = NetworkGetOperationType(type);
+        int index = NetworkGetOperationSubByName(type);
         if (index < 0) {
             snprintf(msg, sizeof(msg), "ctrl request not support");
             LOG_ERR("ctrl request not support");
@@ -438,8 +439,8 @@ static void NetworkControlRequest(void* c, void* data) {
         NetworkGetSubParam(kNetworkOperationSubInfo[index].type, query, &ctrl);
     }
 
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    NetworkOperationInfo* oper_info = NetworkGetOperation(NETWORK_OPERATION_CONTORL_REQUEST);
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    NetworkOperationInfo* oper_info = NetworkGetOperationCb(NETWORK_OPERATION_CONTORL_REQUEST);
     if (oper_info == NULL || oper_info->cb == NULL) {
         snprintf(msg, sizeof(msg), "http server not support operation");
         LOG_ERR("http server not support operation");
@@ -449,7 +450,7 @@ static void NetworkControlRequest(void* c, void* data) {
     NetworkOperationControlCb cb = oper_info->cb;
     int ret = cb(&ctrl);
     CHECK_LT(ret, 0, goto end_unlock);
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     if (ctrl.type == NETWORK_CONTORL_BAD_PIX && ctrl.in.bad_pix_operation == BAD_PIX_OPERATION_GET) {
         cJSON* json = cJSON_CreateObject();
@@ -471,7 +472,7 @@ static void NetworkControlRequest(void* c, void* data) {
 
     return ;
 end_unlock:
-    pthread_mutex_unlock(&kNetworkMng.mutex);
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 end:
     NetworkReplay(c, 500, NETWORK_REPLAY_STR, "", msg);
 }
@@ -489,11 +490,12 @@ static void NetworkDownload(void* c, void* data) {
     cJSON* json = cJSON_Parse(body);
     CHECK_POINTER(json, goto end);
 
-    // char url[512] = {0};
-    // CJSON_GET_STRING(json, "upgrade_url", url, sizeof(url), goto end);
-
-    // int ret = kNetworkMng.func.upgrade_cb("string", url, NULL, msg, sizeof(msg));
-    // CHECK_LT(ret, 0, goto end);
+    NetworkDownloadInfo download_info;
+    CJSON_GET_STRING(json, "type", download_info.type, sizeof(download_info.type), goto end);
+    CJSON_GET_STRING(json, "url", download_info.url, sizeof(download_info.url), goto end);
+    CJSON_GET_NUMBER(json, "size", download_info.size, sizeof(download_info.size), goto end);
+    CJSON_GET_STRING(json, "md5", download_info.md5, sizeof(download_info.md5), goto end);
+    NetworkDownloadFile(&download_info);
 
     NetworkReplay(c, 200, NETWORK_REPLAY_STR, "", "success");
 
@@ -519,7 +521,9 @@ static void NetworkPcInfo(void* c, void* data) {
     cJSON* json = cJSON_Parse(body);
     CHECK_POINTER(json, goto end);
 
-    CJSON_GET_STRING(json, "http_svr_url", kNetworkMng.pc_http_url, sizeof(kNetworkMng.pc_http_url), goto end);
+    char svr_url[256] = {0};
+    CJSON_GET_STRING(json, "http_svr_url", svr_url, sizeof(svr_url), goto end);
+    NetworkUploadSetPcInfo(svr_url);
 
     NetworkReplay(c, 200, NETWORK_REPLAY_STR, "", "success");
     cJSON_free(json);
@@ -542,7 +546,7 @@ static HttpServerUrlInfo kUrlInfo[] ={
     {.method = "POST", .url = "/dev_api/pc_info", .cb = NetworkPcInfo},
 };
 
-static void *NetworkDiscoveryDevice(void *arg) {
+static void *NetworkDiscoveryDeviceProc(void *arg) {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     CHECK_LT(sockfd, 0, return NULL);
 
@@ -559,7 +563,6 @@ static void *NetworkDiscoveryDevice(void *arg) {
     mreq.imr_interface.s_addr = htonl(INADDR_ANY);
     CHECK_LT(setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)), 0, close(sockfd);return NULL);
 
-    LOG_INFO("-----------");
     while (1) {
         struct sockaddr_in client_addr;
         memset(&client_addr, 0, sizeof(client_addr));
@@ -572,15 +575,12 @@ static void *NetworkDiscoveryDevice(void *arg) {
 
         cJSON* json =  cJSON_CreateObject();
         CHECK_POINTER(json, goto end);
-
-        LOG_INFO("-----------");
         CJSON_SET_STRING(json, "device_addr", kNetworkMng.device_addr, goto end);
         CJSON_SET_NUMBER(json, "http_port", NETWORK_HTTP_PORT, goto end);
 
         char* buff = cJSON_PrintUnformatted(json);
         CHECK_POINTER(buff, goto end);
 
-        LOG_INFO("buff:%s", buff);
         sendto(sockfd, buff, strlen(buff), 0, (struct sockaddr *)&client_addr, addr_len);
         free(buff);
         
@@ -609,7 +609,10 @@ int NetworkInit(char* addr, char* log_path) {
         LOG_INFO("server listen url, method:%s, uri:%s", kUrlInfo[i].method, kUrlInfo[i].url);
     }
 
-    pthread_create(&kNetworkMng.pthread_discovery_device, NULL, NetworkDiscoveryDevice, NULL);
+    NetworkUploadInit();
+    NetworkDownloadInit();
+
+    pthread_create(&kNetworkMng.pthread_discovery_device, NULL, NetworkDiscoveryDeviceProc, NULL);
 
     LOG_INFO("network init success! ver:%s", NETWORK_LIB_VERSION);
     return 0;
@@ -621,6 +624,9 @@ void NetworkUnInit() {
         pthread_join(kNetworkMng.pthread_discovery_device, NULL);
     }
 
+    NetworkDownloadUnInit();
+    NetworkUploadUnInit();
+
     HttpServerUnInit();
     ListDestory(kNetworkMng.operation_list);
 }
@@ -628,16 +634,17 @@ void NetworkUnInit() {
 void NetworkOperationRegister(NetworkOperationType type, void* cb) {
     NetworkOperationInfo info = {.type = type, .cb = cb};
 
-    pthread_mutex_lock(&kNetworkMng.mutex);
-    ListPush(kNetworkMng.operation_list, &info, sizeof(NetworkOperationInfo));
-    pthread_mutex_unlock(&kNetworkMng.mutex);
-}
+    if (type == NETWORK_OPERATION_UPGRADE) {
+        NetworkDownloadUpgradeCb(cb);
+        return ;
+    }
 
-void NetworkOperationUnregister(NetworkOperationType type) {
-    // todo
+    pthread_mutex_lock(&kNetworkMng.oper_mutex);
+    ListPush(kNetworkMng.operation_list, &info, sizeof(NetworkOperationInfo));
+    pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 }
 
 int NetworkUploadInfo(NetworkUpload* upload_info) {
-    // TODO
+    NetworkUploadMassage(upload_info);
     return 0;
 }

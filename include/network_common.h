@@ -294,10 +294,31 @@ typedef struct {
     double latitude;            // 纬度
 }PeripheralInfo;
 
+#define NETWORK_UPLOAD_DOWNLOADING "downloading"    // 下载中
+#define NETWORK_UPLOAD_DOWNLOAD_SUCCESS "download_success"  // 下载成功
+#define NETWORK_UPLOAD_DOWNLOAD_FAIL "download_fail"    // 下载失败
+
+#define NETWORK_UPLOAD_UPGRADING "upgrading"    // 升级中
+#define NETWORK_UPLOAD_UPGRADE_SUCCESS "upgrade_success"    // 升级成功
+#define NETWORK_UPLOAD_UPGRADE_FAIL "upgrade_fail"  // 升级失败
+
 typedef enum {
-    UPGRADING,          // 升级中
-    UPGRADE_SUCCESS,    // 升级成功
-    UPGRADE_FAIL,       // 升级失败
-}UpgradeState;
+    NETWORK_UPLOAD_ALARM = 400,           // 报警
+    NETWORK_UPLOAD_PERIPHERAL,      // 外设
+    NETWORK_UPLOAD_DOWNLOAD,         // 下载
+    NETWORK_UPLOAD_UPGRADE,         // 升级
+    NETWORK_UPLOAD_LASER_RANGING,   // 测距
+}NetworkUploadType;
+
+typedef struct {
+    int type; // enum NetworkUploadType
+    union {
+        AlarmInfo alarm_info;
+        PeripheralInfo peripherail_info;
+        char download_state[32];  // NETWORK_UPLOAD_DOWNLOADXXX
+        char upgrade_state[32];  // NETWORK_UPLOAD_UPGRADXXX
+        int distence;
+    } data;
+}NetworkUpload;
 
 #endif

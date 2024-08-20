@@ -142,7 +142,7 @@ const char *elog_port_get_p_info(void) {
 const char *elog_port_get_t_info(void) {
     static char cur_thread_info[10] = { 0 };
 
-    snprintf(cur_thread_info, 10, "tid:%04d", syscall(SYS_gettid));
+    snprintf(cur_thread_info, 10, "tid:%04ld", syscall(SYS_gettid));
 
     return cur_thread_info;
 }

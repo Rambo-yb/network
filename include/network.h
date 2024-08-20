@@ -86,11 +86,6 @@ typedef enum {
 void NetworkOperationRegister(NetworkOperationType type, void* cb);
 
 /**
- * @brief 回调注销接口
- */
-void NetworkOperationUnregister(NetworkOperationType type);
-
-/**
  * @brief 网络初始化
  * @return 成功返回 0
  *         失败返回 其他值
@@ -101,23 +96,6 @@ int NetworkInit(char* addr, char* log_path);
  * @brief 网络反初始化
 */
 void NetworkUnInit();
-
-typedef enum {
-    NETWORK_UPLOAD_ALARM = 400,           // 报警
-    NETWORK_UPLOAD_PERIPHERAL,      // 外设
-    NETWORK_UPLOAD_UPGRADE,         // 升级
-    NETWORK_UPLOAD_LASER_RANGING,   // 测距
-}NetworkUploadType;
-
-typedef struct {
-    int type; // enum NetworkUploadType
-    union {
-        AlarmInfo alarm_info;
-        PeripheralInfo peripherail_info;
-        int upgrade_state;  // enum NetworkUpgradeState
-        int distence;
-    } data;
-}NetworkUpload;
 
 /**
  * @brief 信息上报函数
