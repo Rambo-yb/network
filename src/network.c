@@ -591,11 +591,10 @@ static void *NetworkDiscoveryDeviceProc(void *arg) {
     close(sockfd);
 }
 
-int NetworkInit(char* addr, char* log_path) {
+int NetworkInit(char* addr) {
     CHECK_POINTER(addr, return -1);
-    CHECK_POINTER(log_path, return -1);
 
-    log_init(log_path, 512*1024, 3);
+    log_init("/tmp/network.log", 512*1024, 3, 3);
     snprintf(kNetworkMng.device_addr, sizeof(kNetworkMng.device_addr), "%s", addr);
 
     kNetworkMng.operation_list = ListCreate();

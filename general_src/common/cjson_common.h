@@ -1,37 +1,46 @@
 #ifndef __CJSON_COMMON_H__
 #define __CJSON_COMMON_H__
 
+#include <string.h>
 #include "check_common.h"
 #include "cJSON.h"
 
 #define CJSON_GET_STRING(json, key, val, size, e) \
     do {    \
         cJSON* root = cJSON_GetObjectItemCaseSensitive(json, key); \
-        CHECK_POINTER(root, e); \
-        CHECK_BOOL(cJSON_IsString(root), e); \
-        snprintf(val, size, "%s", cJSON_GetStringValue(root));  \
+        if (root != NULL && cJSON_IsString(root)) { \
+            snprintf(val, size, "%s", cJSON_GetStringValue(root));  \
+        } else {    \
+            LOG_DEBUG("%s val is null", key);  \
+            memset(val, 0, size);    \
+        }   \
     }while(0);
 
 #define CJSON_GET_NUMBER(json, key, val, size, e) \
     do {    \
         cJSON* root = cJSON_GetObjectItemCaseSensitive(json, key); \
-        CHECK_POINTER(root, e); \
-        CHECK_BOOL(cJSON_IsNumber(root), e); \
-        val = cJSON_GetNumberValue(root); \
+        if (root != NULL && cJSON_IsNumber(root)) { \
+            val = cJSON_GetNumberValue(root);  \
+        } else {    \
+            LOG_DEBUG("%s val is null", key);  \
+            val = 0;    \
+        }   \
     }while(0);
 
 #define CJSON_GET_NUMBER_LIST(json, key, val, size, list_size, e)   \
     do {    \
         cJSON* root = cJSON_GetObjectItemCaseSensitive(json, key);  \
-        CHECK_POINTER(root, e); \
-        CHECK_BOOL(cJSON_IsArray(root), e); \
-        size = cJSON_GetArraySize(root);    \
-        for(int ii = 0; ii < size && ii < list_size; ii++) {    \
-            cJSON* item = cJSON_GetArrayItem(root, ii); \
-            CHECK_POINTER(item, e); \
-            CHECK_BOOL(cJSON_IsNumber(item), e);    \
-            val[ii] = cJSON_GetNumberValue(item);   \
-        }   \
+        if (root != NULL && cJSON_IsArray(root)) { \
+            size = cJSON_GetArraySize(root);    \
+            for(int ii = 0; ii < size && ii < list_size; ii++) {    \
+                cJSON* item = cJSON_GetArrayItem(root, ii); \
+                CHECK_POINTER(item, e); \
+                CHECK_BOOL(cJSON_IsNumber(item), e);    \
+                val[ii] = cJSON_GetNumberValue(item);   \
+            }   \
+        } else { \
+            LOG_DEBUG("%s val is null", key); \
+        } \
     }while(0);
 
 #define CJSON_SET_STRING(json, key, val, e)   \

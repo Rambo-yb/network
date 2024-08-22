@@ -16,6 +16,9 @@
 #define LOG_INFO(format, ...) \
     log_i(format, ##__VA_ARGS__)
 
+#define LOG_DEBUG(format, ...) \
+    log_d(format, ##__VA_ARGS__)
+
 #define LOG_HEX(data, size, wide) \
     elog_hexdump("", wide, data, size);
 
@@ -30,6 +33,9 @@
 #define LOG_INFO(format, ...) \
     printf("\e[0m[%s:%d %s]"format"\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
+#define LOG_DEBUG(format, ...) \
+    printf("\e[0;32m[%s:%d %s]"format"\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+
 #define LOG_HEX(data, size, wide) \
     do {    \
         for (int i = 0; i * wide < size; i++) { \
@@ -41,6 +47,6 @@
     }while(0);
 #endif
 
-int log_init(char* file, int size, int cnt);
+int log_init(char* file, int size, int cnt, int lvl);
 
 #endif

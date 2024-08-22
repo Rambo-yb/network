@@ -90,7 +90,7 @@ void NetworkOperationRegister(NetworkOperationType type, void* cb);
  * @return 成功返回 0
  *         失败返回 其他值
 */
-int NetworkInit(char* addr, char* log_path);
+int NetworkInit(char* addr);
 
 /**
  * @brief 网络反初始化

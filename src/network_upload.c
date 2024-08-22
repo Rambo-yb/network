@@ -102,6 +102,10 @@ static void *NetworkUploadProc(void *arg) {
         }
         pthread_mutex_unlock(&kNetworkUploadMng.upload_mutex);
 
+        if (strlen(kNetworkUploadMng.pc_http_url) <= 0) {
+            continue;
+        }
+
         char uri[64] = {0};
         char body[1024*8] = {0};
         if (NetworkUploadInfoToStr(&info, body, sizeof(body), uri, sizeof(uri)) < 0) {

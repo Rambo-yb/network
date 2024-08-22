@@ -3,9 +3,10 @@
 #include "elog.h"
 #endif
 
-int log_init(char* file, int size, int cnt) {
+int log_init(char* file, int size, int cnt, int lvl) {
 #if defined(USE_EASYLOGGER)
     elog_init(file, size, cnt);
+    elog_set_filter_lvl(lvl);
 
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL& ~ELOG_FMT_LVL & ~ELOG_FMT_TAG);
     elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_TIME | ELOG_FMT_FUNC | ELOG_FMT_LINE);
