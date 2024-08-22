@@ -613,7 +613,7 @@ int NetworkInit(char* addr) {
 
     pthread_create(&kNetworkMng.pthread_discovery_device, NULL, NetworkDiscoveryDeviceProc, NULL);
 
-    LOG_INFO("network init success! ver:%s", NETWORK_LIB_VERSION);
+    LOG_INFO("network init success! compile time:%s %s, ver:%s", __DATE__, __TIME__, NETWORK_LIB_VERSION);
     return 0;
 }
 
