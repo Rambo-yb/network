@@ -259,7 +259,7 @@ static HttpServerUrlInfo kUrlInfo[] ={
 };
 
 int NetworkInit(NetworkOperFunc* func) {
-    log_init("/tmp/network.log", 512*1024, 3);
+    log_init("/oem/logs/network.log", 512*1024, 3);
     memcpy(&kNetworkMng.func, func, sizeof(NetworkOperFunc));
 
     HttpServerInit(":8080");
