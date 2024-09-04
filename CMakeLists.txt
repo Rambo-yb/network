@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(network)
 
 add_definitions(-DUSE_EASYLOGGER)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/example MAIN_SRC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRC)

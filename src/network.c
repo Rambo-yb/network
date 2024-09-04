@@ -9,6 +9,8 @@
 #include "struct_to_cjson.h"
 #include "cjson_to_struct.h"
 
+#define NETWORK_LIB_VERSION "V1.0.0"
+
 typedef struct {
     char method[16];
     char url[256];
@@ -268,6 +270,7 @@ int NetworkInit(NetworkOperFunc* func) {
         LOG_INFO("server listen url, method:%s, urI:%s", kUrlInfo[i].method, kUrlInfo[i].url);
     }
 
+    LOG_INFO("network init success! compile time:%s %s, ver:%s", __DATE__, __TIME__, NETWORK_LIB_VERSION);
     return 0;
 }
 
