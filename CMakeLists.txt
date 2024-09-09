@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(network)
 
 add_definitions(-DUSE_EASYLOGGER)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/example MAIN_SRC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRC)
@@ -29,8 +30,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_src/easylogger)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/_install/curl/include)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/_install/curl/lib)
 
-add_library(network ${SRC})
-#add_library(network SHARED ${SRC})
+#add_library(network ${SRC})
+add_library(network SHARED ${SRC})
 
 add_executable(network_test ${MAIN_SRC})
 target_link_libraries(network_test network curl z pthread)
