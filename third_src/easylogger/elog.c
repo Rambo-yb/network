@@ -164,7 +164,7 @@ ElogErrCode elog_init(char* file, int size, int cnt) {
     ElogErrCode result = ELOG_NO_ERR;
 
     if (elog.init_ok == true) {
-        return result;
+        return ELOG_ALREADY_INIT;
     }
 
     /* port initialize */

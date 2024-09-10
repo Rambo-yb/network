@@ -5,7 +5,9 @@
 
 int log_init(char* file, int size, int cnt, int lvl) {
 #if defined(USE_EASYLOGGER)
-    elog_init(file, size, cnt);
+    if (elog_init(file, size, cnt) == ELOG_ALREADY_INIT) {
+        return 0;
+    }
     elog_set_filter_lvl(lvl);
 
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL& ~ELOG_FMT_LVL & ~ELOG_FMT_TAG);

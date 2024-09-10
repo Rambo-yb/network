@@ -194,6 +194,7 @@ typedef struct {
 /* EasyLogger error code */
 typedef enum {
     ELOG_NO_ERR,
+    ELOG_ALREADY_INIT,
 } ElogErrCode;
 
 /* elog.c */
