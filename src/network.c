@@ -36,15 +36,15 @@ typedef struct {
 
 typedef struct {
     // 配置
-    SystemInfo system_info;
-    CameraChipInfo camera_chip_info;
-    Position position;
-    CalibrationGun calibration_gun;
-    PtzInfo ptz_info;
-    Areas areas;
-    OtherConfig other_config;
-    NetworkInfo network_info;
-    Algorithm algorithm;
+    NetworkSystemInfo system_info;
+    NetworkCameraChipInfo camera_chip_info;
+    NetworkPosition position;
+    NetworkCalibrationGun calibration_gun;
+    NetworkPtzInfo ptz_info;
+    NetworkAreas areas;
+    NetworkOtherConfig other_config;
+    NetworkNetworkInfo network_info;
+    NetworkAlgorithm algorithm;
 
     void* operation_list;
     pthread_mutex_t oper_mutex;
@@ -56,36 +56,36 @@ typedef struct {
 }NetworkMng;
 static NetworkMng kNetworkMng = {.oper_mutex = PTHREAD_MUTEX_INITIALIZER};
 
-typedef int (*StructToCjsonCb)(void*, cJSON**);
-typedef int (*CjsonToStructCb)(cJSON*, void*);
+typedef int (*StructToCjsonNetworkCb)(void*, cJSON**);
+typedef int (*CjsonToStructNetworkCb)(cJSON*, void*);
 
 typedef struct {
     int type;
     char* name;
     void* st;
     int st_size;
-    StructToCjsonCb s2j_cb;
-    CjsonToStructCb j2s_cb;
+    StructToCjsonNetworkCb s2j_cb;
+    CjsonToStructNetworkCb j2s_cb;
 }NetworkOperationSubInfo;
 
 #define NETWORK_CONFIG_INFO_INIT(t, nm, st_space, st_name)  \
     {.type = t, .name = nm, .st = &st_space, .st_size = sizeof(st_space), .s2j_cb = StructToCjson##st_name, .j2s_cb = CjsonToStruct##st_name}
 
 static NetworkOperationSubInfo kNetworkOperationSubInfo[] = {
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_SYSTEM_INFO, "system_info", kNetworkMng.system_info, SystemInfo),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_CAMERA_CHIP_INFO, "camera_chip_info", kNetworkMng.camera_chip_info, CameraChipInfo),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_POSITION, "position", kNetworkMng.position, Position),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_CALIBRATION_GUN, "calibration_gun", kNetworkMng.calibration_gun, CalibrationGun),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_PTZ_INFO, "ptz_info", kNetworkMng.ptz_info, PtzInfo),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_AREAS, "areas", kNetworkMng.areas, Areas),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_OTHER_INFO, "other_info", kNetworkMng.other_config, OtherConfig),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_NETWORK, "network", kNetworkMng.network_info, NetworkInfo),
-    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_ALGORITHM, "algorithm", kNetworkMng.algorithm, Algorithm),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_SYSTEM_INFO, "system_info", kNetworkMng.system_info, NetworkSystemInfo),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_CAMERA_CHIP_INFO, "camera_chip_info", kNetworkMng.camera_chip_info, NetworkCameraChipInfo),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_POSITION, "position", kNetworkMng.position, NetworkPosition),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_CALIBRATION_GUN, "calibration_gun", kNetworkMng.calibration_gun, NetworkCalibrationGun),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_PTZ_INFO, "ptz_info", kNetworkMng.ptz_info, NetworkPtzInfo),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_AREAS, "areas", kNetworkMng.areas, NetworkAreas),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_OTHER_INFO, "other_info", kNetworkMng.other_config, NetworkOtherConfig),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_NETWORK, "network", kNetworkMng.network_info, NetworkNetworkInfo),
+    NETWORK_CONFIG_INFO_INIT(NETWORK_CONFIG_ALGORITHM, "algorithm", kNetworkMng.algorithm, NetworkAlgorithm),
 
     {.type = NETWORK_SYSTEM_REBOOT, .name = "device_reboot"},
     {.type = NETWORK_SYSTEM_RESET, .name = "device_reset"},
     {.type = NETWORK_SYSTEM_FORMAT, .name = "device_format"},
-    {.type = NETWORK_SYSTEM_DEVICE_INFO, .name = "device_info", .s2j_cb = StructToCjsonDeviceInfo},
+    {.type = NETWORK_SYSTEM_DEVICE_INFO, .name = "device_info", .s2j_cb = StructToCjsonNetworkDeviceInfo},
     {.type = NETWORK_SYSTEM_SET_TIME, .name = "set_time"},
     {.type = NETWORK_SYSTEM_GET_RTSP_URL, .name = "get_rtsp_url"},
 
@@ -94,7 +94,7 @@ static NetworkOperationSubInfo kNetworkOperationSubInfo[] = {
     {.type = NETWORK_CONTORL_BAD_PIX, .name = "bad_pix"},
     {.type = NETWORK_CONTORL_SHUTTER_CALIBRATION, .name = "shutter_calibration"},
     {.type = NETWORK_CONTORL_LASER_RANGING, .name = "laser_ranging"},
-    {.type = NETWORK_CONTORL_PTZ, .name = "ptz"},
+    {.type = NETWORK_CONTORL_PTZ, .name = "ptz_ctrl"},
     {.type = NETWORK_CONTORL_TRACKING, .name = "tracking_object"},
 };
 
@@ -176,14 +176,14 @@ static void NetworkGetAbility(void* c, void* data) {
         goto end_unlock;
     }
 
-    SupportFunction func;
-    memset(&func, 0, sizeof(SupportFunction));
-    NetworkOperationGetConfigCb cb = oper_info->cb;
-    int ret = cb(kNetworkOperationSubInfo[i].type, kNetworkOperationSubInfo[i].st, kNetworkOperationSubInfo[i].st_size);
+    NetworkSupportFunction func;
+    memset(&func, 0, sizeof(NetworkSupportFunction));
+    NetworkOperationGetAbilityCb cb = oper_info->cb;
+    int ret = cb(&func);
     pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
     cJSON* conf_json = NULL;
-    CHECK_LT(StructToCjsonSupportFunction(&func, &conf_json), 0, goto end);
+    CHECK_LT(StructToCjsonNetworkSupportFunction(&func, &conf_json), 0, goto end);
     CHECK_BOOL(cJSON_AddItemToObject(json, "support_function", conf_json), cJSON_free(conf_json);goto end);
 
     NetworkReplay(c, 200, NETWORK_REPLAY_JSON, json, "success");
@@ -367,7 +367,7 @@ static void NetworkGetConfig(void* c, void* data) {
 
     pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
-    CHECK_BOOL(cJSON_AddItemToObject(json, conf_name, conf_json), cJSON_free(conf_json);goto end);
+    CHECK_BOOL(cJSON_AddItemToObject(json, "config_info", conf_json), cJSON_free(conf_json);goto end);
 
     NetworkReplay(c, 200, NETWORK_REPLAY_JSON, json, "success");
 
@@ -391,6 +391,9 @@ static void NetworkGetSubParam(int type, char* in, void* out) {
         break;
     case NETWORK_CONTORL_BAD_PIX: 
         sscanf(in, "%*[^&]&oper=%d", &ctrl->in.bad_pix_operation);
+        break;
+    case NETWORK_CONTORL_PTZ:
+        sscanf(in, "%*[^&]&mode=%d", &ctrl->in.ptz_ctrl.mode);
         break;
     case NETWORK_CONTORL_LASER_RANGING: 
         sscanf(in, "%*[^&]&mode=%d&state=%d", &ctrl->in.laser_ranging.mode, &ctrl->in.laser_ranging.state);
@@ -419,7 +422,7 @@ static void NetworkControlRequest(void* c, void* data) {
         cJSON* json = cJSON_Parse(body);
         CHECK_POINTER(json, goto end);
 
-        CJSON_GET_NUMBER_LIST(json, "tracking_object", ctrl.in.tracking_object.tracking_object, ctrl.in.tracking_object.tracking_num, TRACKING_OBJECT_MAX_NUM, goto end);
+        CJSON_GET_NUMBER_LIST(json, "tracking_object", ctrl.in.tracking_object.tracking_object, ctrl.in.tracking_object.tracking_num, NET_TRACKING_OBJECT_MAX_NUM, goto end);
         ctrl.type = NETWORK_CONTORL_TRACKING;
     } else if (strcmp(method, "GET") == 0) {
         char query[1024] = {0};
@@ -452,14 +455,14 @@ static void NetworkControlRequest(void* c, void* data) {
     CHECK_LT(ret, 0, goto end_unlock);
     pthread_mutex_unlock(&kNetworkMng.oper_mutex);
 
-    if (ctrl.type == NETWORK_CONTORL_BAD_PIX && ctrl.in.bad_pix_operation == BAD_PIX_OPERATION_GET) {
+    if (ctrl.type == NETWORK_CONTORL_BAD_PIX && ctrl.in.bad_pix_operation == NETWORK_BAD_PIX_OPERATION_GET) {
         cJSON* json = cJSON_CreateObject();
         CHECK_POINTER(json, goto end);
 
         CJSON_SET_NUMBER(json, "bad_pix_num", ctrl.out.bad_pix_num, cJSON_free(json);goto end);
         NetworkReplay(c, 200, NETWORK_REPLAY_JSON, json, "success");
         cJSON_free(json);
-    } else if (ctrl.type == NETWORK_CONTORL_LASER_RANGING && ctrl.in.laser_ranging.mode == LASER_RANGING_SINGLE) {
+    } else if (ctrl.type == NETWORK_CONTORL_LASER_RANGING && ctrl.in.laser_ranging.mode == NETWORK_LASER_RANGING_SINGLE) {
         cJSON* json = cJSON_CreateObject();
         CHECK_POINTER(json, goto end);
 

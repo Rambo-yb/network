@@ -17,11 +17,11 @@
     }while(0);
 
 /** 能力 **/
-static int StructToCjsonFunctionSoap(void* st, cJSON** json) {
+static int StructToCjsonNetworkFunctionSoap(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    FunctionSoap* func_soap = (FunctionSoap*)st;
+    NetworkFunctionSoap* func_soap = (NetworkFunctionSoap*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -36,11 +36,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonSystemFunction(void* st, cJSON** json) {
+static int StructToCjsonNetworkSystemFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    SystemFunction* system_func = (SystemFunction*)st;
+    NetworkSystemFunction* system_func = (NetworkSystemFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -58,11 +58,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonCameraChipFunction(void* st, cJSON** json) {
+static int StructToCjsonNetworkCameraChipFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    CameraChipFunction* camera_chip_func = (CameraChipFunction*)st;
+    NetworkCameraChipFunction* camera_chip_func = (NetworkCameraChipFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -80,7 +80,7 @@ static int StructToCjsonCameraChipFunction(void* st, cJSON** json) {
     CJSON_SET_NUMBER(new_json, "outdoor_mode_support", camera_chip_func->outdoor_mode_support, goto end);
     CJSON_SET_MASK(new_json, "fusion_mode_support_mask", camera_chip_func->fusion_mode_support_mask, goto end);
     CJSON_SET_NUMBER(new_json, "shutter_calibration_support", camera_chip_func->shutter_calibration_support, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "bad_pix_threshold_support", camera_chip_func->bad_pix_threshold_support, StructToCjsonFunctionSoap, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "bad_pix_threshold_support", camera_chip_func->bad_pix_threshold_support, StructToCjsonNetworkFunctionSoap, goto end);
 
     *json = new_json;
     return 0;
@@ -89,11 +89,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonCalibrationGunFunction(void* st, cJSON** json) {
+static int StructToCjsonNetworkCalibrationGunFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    CalibrationGunFunction* calibration_gun_func = (CalibrationGunFunction*)st;
+    NetworkCalibrationGunFunction* calibration_gun_func = (NetworkCalibrationGunFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -109,11 +109,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonOtherFunction(void* st, cJSON** json) {
+static int StructToCjsonNetworkOtherFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    OtherFunction* other_func = (OtherFunction*)st;
+    NetworkOtherFunction* other_func = (NetworkOtherFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -131,11 +131,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonAlgorithmFunction(void* st, cJSON** json) {
+static int StructToCjsonNetworkAlgorithmFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    AlgorithmFunction* algorithm_func = (AlgorithmFunction*)st;
+    NetworkAlgorithmFunction* algorithm_func = (NetworkAlgorithmFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -152,19 +152,19 @@ end:
     return -1;
 }
 
-int StructToCjsonSupportFunction(void* st, cJSON** json) {
+int StructToCjsonNetworkSupportFunction(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    SupportFunction* support_func = (SupportFunction*)st;
+    NetworkSupportFunction* support_func = (NetworkSupportFunction*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
-    CJSON_SET_SUB_OBJECT(new_json, "system_function", support_func->system_function, StructToCjsonSystemFunction, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "camera_chip_function", support_func->camera_chip_function, StructToCjsonCameraChipFunction, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "calibration_gun_function", support_func->calibration_gun_function, StructToCjsonCalibrationGunFunction, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "other_function", support_func->other_function, StructToCjsonOtherFunction, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "algorithm_function", support_func->algorithm_function, StructToCjsonAlgorithmFunction, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "system_function", support_func->system_function, StructToCjsonNetworkSystemFunction, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "camera_chip_function", support_func->camera_chip_function, StructToCjsonNetworkCameraChipFunction, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "calibration_gun_function", support_func->calibration_gun_function, StructToCjsonNetworkCalibrationGunFunction, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "other_function", support_func->other_function, StructToCjsonNetworkOtherFunction, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "algorithm_function", support_func->algorithm_function, StructToCjsonNetworkAlgorithmFunction, goto end);
 
     *json = new_json;
     return 0;
@@ -174,17 +174,17 @@ end:
 }
 
 /** 系统 **/
-int StructToCjsonDeviceInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkDeviceInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    DeviceInfo* device_info = (DeviceInfo*)st;
+    NetworkDeviceInfo* device_info = (NetworkDeviceInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
     CJSON_SET_STRING(new_json, "soft_version", device_info->soft_version, goto end);
-    CJSON_SET_STRING(new_json, "hard_version", device_info->soft_version, goto end);
-    CJSON_SET_STRING(new_json, "serial_number", device_info->soft_version, goto end);
+    CJSON_SET_STRING(new_json, "hard_version", device_info->hard_version, goto end);
+    CJSON_SET_STRING(new_json, "serial_number", device_info->serial_number, goto end);
 
     *json = new_json;
     return 0;
@@ -194,11 +194,11 @@ end:
 }
 
 /** 配置 **/
-int StructToCjsonSystemInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkSystemInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    SystemInfo* system_info = (SystemInfo*)st;
+    NetworkSystemInfo* system_info = (NetworkSystemInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -214,15 +214,15 @@ end:
     return -1;
 }
 
-int StructToCjsonCameraChipInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkCameraChipInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    CameraChipInfo* camera_chip_info = (CameraChipInfo*)st;
+    NetworkCameraChipInfo* camera_chip_info = (NetworkCameraChipInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
-    CJSON_SET_NUMBER(new_json, "brigthness", camera_chip_info->brigthness, goto end);
+    CJSON_SET_NUMBER(new_json, "brightness", camera_chip_info->brightness, goto end);
     CJSON_SET_NUMBER(new_json, "contrast", camera_chip_info->contrast, goto end);
     CJSON_SET_NUMBER(new_json, "pseudo_color", camera_chip_info->pseudo_color, goto end);
     CJSON_SET_NUMBER(new_json, "sharpening", camera_chip_info->sharpening, goto end);
@@ -245,11 +245,11 @@ end:
     return -1;
 }
 
-int StructToCjsonPosition(void* st, cJSON** json) {
+int StructToCjsonNetworkPosition(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    Position* position = (Position*)st;
+    NetworkPosition* position = (NetworkPosition*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -266,11 +266,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonPoint(void* st, cJSON** json) {
+static int StructToCjsonNetworkPoint(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    Point* point = (Point*)st;
+    NetworkPoint* point = (NetworkPoint*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -284,18 +284,18 @@ end:
     return -1;
 }
 
-int StructToCjsonCalibrationGun(void* st, cJSON** json) {
+int StructToCjsonNetworkCalibrationGun(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    CalibrationGun* calibration_gun = (CalibrationGun*)st;
+    NetworkCalibrationGun* calibration_gun = (NetworkCalibrationGun*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
     CJSON_SET_STRING(new_json, "gun_type", calibration_gun->gun_type, goto end);
     CJSON_SET_NUMBER(new_json, "colgraticule_style", calibration_gun->colgraticule_style, goto end);
     CJSON_SET_NUMBER(new_json, "color", calibration_gun->color, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "coordinate", calibration_gun->coordinate, StructToCjsonPoint, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "coordinate", calibration_gun->coordinate, StructToCjsonNetworkPoint, goto end);
 
     *json = new_json;
     return 0;
@@ -304,17 +304,17 @@ end:
     return -1;
 }
 
-static int StructToCjsonConstantScan(void* st, cJSON** json) {
+static int StructToCjsonNetworkConstantScan(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    ConstantScan* constant_scan = (ConstantScan*)st;
+    NetworkConstantScan* constant_scan = (NetworkConstantScan*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
     CJSON_SET_NUMBER(new_json, "deflection_mode", constant_scan->deflection_mode, goto end);
     CJSON_SET_NUMBER(new_json, "yaw", constant_scan->yaw, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "pix", constant_scan->pix, StructToCjsonPoint, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "pix", constant_scan->pix, StructToCjsonNetworkPoint, goto end);
 
     *json = new_json;
     return 0;
@@ -323,11 +323,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonFanScanning(void* st, cJSON** json) {
+static int StructToCjsonNetworkFanScanning(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    FanScanning* fan_scanning = (FanScanning*)st;
+    NetworkFanScanning* fan_scanning = (NetworkFanScanning*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -341,17 +341,17 @@ end:
     return -1;
 }
 
-int StructToCjsonPtzInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkPtzInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    PtzInfo* ptz_info = (PtzInfo*)st;
+    NetworkPtzInfo* ptz_info = (NetworkPtzInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
     CJSON_SET_NUMBER(new_json, "motor_enable", ptz_info->motor_enable, goto end);
     CJSON_SET_NUMBER(new_json, "scan_mode", ptz_info->scan_mode, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "constant_scan", ptz_info->constant_scan, StructToCjsonConstantScan, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "fan_scanning", ptz_info->fan_scanning, StructToCjsonFanScanning, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "constant_scan", ptz_info->constant_scan, StructToCjsonNetworkConstantScan, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "fan_scanning", ptz_info->fan_scanning, StructToCjsonNetworkFanScanning, goto end);
     CJSON_SET_NUMBER(new_json, "pitch", ptz_info->pitch, goto end);
     CJSON_SET_NUMBER(new_json, "step", ptz_info->step, goto end);
     CJSON_SET_NUMBER(new_json, "speed", ptz_info->speed, goto end);
@@ -363,11 +363,11 @@ end:
     return -1;
 }
 
-static int StructToCjsonArea(void* st, cJSON** json) {
+static int StructToCjsonNetworkArea(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    Area* area = (Area*)st;
+    NetworkArea* area = (NetworkArea*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, return -1);
 
@@ -381,7 +381,7 @@ static int StructToCjsonArea(void* st, cJSON** json) {
 
     for(int i = 0; i < area->point_num && i < area->point_num_max && i < NET_POINT_NUM_MAX; i++) {
         cJSON* point_item = NULL;
-        CHECK_LT(StructToCjsonPoint(&area->point[i], &point_item), 0, cJSON_free(point);goto end);
+        CHECK_LT(StructToCjsonNetworkPoint(&area->point[i], &point_item), 0, cJSON_free(point);goto end);
         CHECK_BOOL(cJSON_AddItemToArray(point, point_item), cJSON_free(point_item);cJSON_free(point);goto end);
     }
 
@@ -394,17 +394,17 @@ end:
     return -1; 
 }
 
-int StructToCjsonAreas(void* st, cJSON** json) {
+int StructToCjsonNetworkAreas(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    Areas* areas = (Areas*)st;
+    NetworkAreas* areas = (NetworkAreas*)st;
     cJSON* new_json = cJSON_CreateArray();
     CHECK_POINTER(new_json, -1);
 
     for(int i = 0; i < areas->area_num && i < NET_AREA_NUM_MAX; i++) {
         cJSON* area_item = NULL;
-        CHECK_LT(StructToCjsonArea(&areas[i], &area_item), 0, goto end);
+        CHECK_LT(StructToCjsonNetworkArea(&areas->area[i], &area_item), 0, goto end);
         CHECK_BOOL(cJSON_AddItemToArray(new_json, area_item), cJSON_free(area_item);goto end);
     }
 
@@ -415,16 +415,16 @@ end:
     return -1;
 }
 
-static int StructToCjsonRedDotInfo(void* st, cJSON** json) {
+static int StructToCjsonNetworkRedDotInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    RedDotInfo* red_dot_info = (RedDotInfo*)st;
+    NetworkRedDotInfo* red_dot_info = (NetworkRedDotInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
     CJSON_SET_NUMBER(new_json, "enable", red_dot_info->enable, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "coordinate", red_dot_info->coordinate, StructToCjsonPoint, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "coordinate", red_dot_info->coordinate, StructToCjsonNetworkPoint, goto end);
 
     *json = new_json;
     return 0;
@@ -433,11 +433,11 @@ end:
     return -1;
 }
 
-int StructToCjsonOtherConfig(void* st, cJSON** json) {
+int StructToCjsonNetworkOtherConfig(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    OtherConfig* other_config = (OtherConfig*)st;
+    NetworkOtherConfig* other_config = (NetworkOtherConfig*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -445,7 +445,7 @@ int StructToCjsonOtherConfig(void* st, cJSON** json) {
     CJSON_SET_NUMBER(new_json, "heat_enable", other_config->heat_enable, goto end);
     CJSON_SET_NUMBER(new_json, "fan_enable", other_config->fan_enable, goto end);
     CJSON_SET_NUMBER(new_json, "electronic_compass_enable", other_config->electronic_compass_enable, goto end);
-    CJSON_SET_SUB_OBJECT(new_json, "red_dot", other_config->red_dot, StructToCjsonRedDotInfo, goto end);
+    CJSON_SET_SUB_OBJECT(new_json, "red_dot", other_config->red_dot, StructToCjsonNetworkRedDotInfo, goto end);
     CJSON_SET_NUMBER(new_json, "hdmi_enable", other_config->hdmi_enable, goto end);
 
     *json = new_json;
@@ -455,11 +455,11 @@ end:
     return -1;
 }
 
-int StructToCjsonNetworkInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkNetworkInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, return -1);
     CHECK_POINTER(json, return -1);
 
-    NetworkInfo* network_info = (NetworkInfo*)st;
+    NetworkNetworkInfo* network_info = (NetworkNetworkInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
         
@@ -480,11 +480,11 @@ end:
 
 }
 
-int StructToCjsonAlgorithm(void* st, cJSON** json) {
+int StructToCjsonNetworkAlgorithm(void* st, cJSON** json) {
     CHECK_POINTER(st, -1);
     CHECK_POINTER(json, return -1);
 
-    Algorithm* algorithm = (Algorithm*)st;
+    NetworkAlgorithm* algorithm = (NetworkAlgorithm*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
         
@@ -499,10 +499,10 @@ end:
     return -1;
 }
 
-int StructToCjsonAlarmInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkAlarmInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, -1);
 
-    AlarmInfo* alarm_info = (AlarmInfo*)st;
+    NetworkAlarmInfo* alarm_info = (NetworkAlarmInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 
@@ -517,10 +517,10 @@ end:
     return -1;
 }
 
-int StructToCjsonPeripheralInfo(void* st, cJSON** json) {
+int StructToCjsonNetworkPeripheralInfo(void* st, cJSON** json) {
     CHECK_POINTER(st, -1);
 
-    PeripheralInfo* peripheral_info = (PeripheralInfo*)st;
+    NetworkPeripheralInfo* peripheral_info = (NetworkPeripheralInfo*)st;
     cJSON* new_json = cJSON_CreateObject();
     CHECK_POINTER(new_json, -1);
 

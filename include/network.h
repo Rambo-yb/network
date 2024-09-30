@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-typedef int (*NetworkOperationGetAbilityCb)(SupportFunction* );
+typedef int (*NetworkOperationGetAbilityCb)(NetworkSupportFunction* );
 
 typedef enum {
-    NETWORK_SYSTEM_REBOOT = 100,          // 重启
+    NETWORK_SYSTEM_REBOOT = 100,    // 重启
     NETWORK_SYSTEM_RESET,           // 恢复出厂
     NETWORK_SYSTEM_FORMAT,          // 格式化
     NETWORK_SYSTEM_DEVICE_INFO,     // 设备信息
@@ -24,7 +24,7 @@ typedef struct {
     } in;
 
     union {
-        DeviceInfo device_info;     // 获取的设备信息
+        NetworkDeviceInfo device_info;     // 获取的设备信息
         char rtsp_url[128];         // 获取的rtsp地址
     } out;
 }NetworkSystem;
@@ -58,9 +58,10 @@ typedef struct {
     int type;   // enum NetworkContorlType
     union {
         int recode_state;           // 录像状态，0结束，1开始
-        int bad_pix_operation;      // enum BadPixOperationType
-        LaserRanging laser_ranging;
-        TrackingObject tracking_object;
+        int bad_pix_operation;      // enum NetworkBadPixOperationType
+        NetworkLaserRanging laser_ranging;
+        NetworkPtzCtrl ptz_ctrl;
+        NetworkTrackingObject tracking_object;
     } in;
     
     union {

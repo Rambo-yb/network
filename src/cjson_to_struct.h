@@ -9,29 +9,29 @@ extern "C" {
 #endif
 
 /** 配置 **/
-int CjsonToStructSystemInfo(cJSON* json, void* st);
+int CjsonToStructNetworkSystemInfo(cJSON* json, void* st);
 
-int CjsonToStructCameraChipInfo(cJSON* json, void* st);
+int CjsonToStructNetworkCameraChipInfo(cJSON* json, void* st);
 
-int CjsonToStructPosition(cJSON* json, void* st);
+int CjsonToStructNetworkPosition(cJSON* json, void* st);
 
-int CjsonToStructCalibrationGun(cJSON* json, void* st);
+int CjsonToStructNetworkCalibrationGun(cJSON* json, void* st);
 
-int CjsonToStructPtzInfo(cJSON* json, void* st);
+int CjsonToStructNetworkPtzInfo(cJSON* json, void* st);
 
-int CjsonToStructAreas(cJSON* json, void* st);
+int CjsonToStructNetworkAreas(cJSON* json, void* st);
 
-int CjsonToStructOtherConfig(cJSON* json, void* st);
+int CjsonToStructNetworkOtherConfig(cJSON* json, void* st);
 
-int CjsonToStructNetworkInfo(cJSON* json, void* st);
+int CjsonToStructNetworkNetworkInfo(cJSON* json, void* st);
 
-int CjsonToStructAlgorithm(cJSON* json, void* st);
+int CjsonToStructNetworkAlgorithm(cJSON* json, void* st);
 
 
 
-int CjsonToStructAlarmInfo(cJSON* json, void* st);
+int CjsonToStructNetworkAlarmInfo(cJSON* json, void* st);
 
-int CjsonToStructPeripheralInfo(cJSON* json, void* st);
+int CjsonToStructNetworkPeripheralInfo(cJSON* json, void* st);
 
 #ifdef __cplusplus
 };

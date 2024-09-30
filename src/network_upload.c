@@ -25,11 +25,11 @@ static int NetworkUploadInfoToStr(NetworkUpload* info, char* body, int body_size
     switch(info->type) {
     case NETWORK_UPLOAD_ALARM:
         snprintf(uri, uri_size, "/pc_api/alarm_info");
-        CHECK_LT(StructToCjsonAlarmInfo(&info->data.alarm_info, &json), 0, return -1);
+        CHECK_LT(StructToCjsonNetworkAlarmInfo(&info->data.alarm_info, &json), 0, return -1);
         break;
     case NETWORK_UPLOAD_PERIPHERAL:
         snprintf(uri, uri_size, "/pc_api/peripheral_info");
-        CHECK_LT(StructToCjsonPeripheralInfo(&info->data.peripherail_info, &json), 0, return -1);
+        CHECK_LT(StructToCjsonNetworkPeripheralInfo(&info->data.peripherail_info, &json), 0, return -1);
         break;
     case NETWORK_UPLOAD_DOWNLOAD:{
         snprintf(uri, uri_size, "/pc_api/other_info");
